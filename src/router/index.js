@@ -29,7 +29,7 @@ const router = createRouter({
     {
       path: "/admin/managePatterns",
       component: () => import("../pages/ManagePatterns.vue"),
-      meta: { requiresAuth: true },
+      meta: { requiresAdmin: true },
     },
   ],
   scrollBehavior(to, from, savedPosition) {
@@ -41,13 +41,30 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.meta.requiresAuth;
+  const requiresAdmin = to.meta.requiresAdmin;
+  const requiresAuth = to.meta.requiresAuth || requiresAdmin;
   const currentUser = getAuth().currentUser;
-  console.log(requiresAuth);
+
   if (requiresAuth && !currentUser)
     next({ path: "/login", query: { redirect: to.fullPath } });
   else if (requiresAuth === false && currentUser) next("/planner");
-  else next();
+  else if (requiresAdmin) {
+    currentUser
+      .getIdTokenResult()
+      .then((idTokenResult) => {
+        // Confirm the user is an Admin.
+        if (idTokenResult.claims.admin) {
+          // Show admin UI.
+          next();
+        } else {
+          // Show regular user UI.
+          next("/planner");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } else next();
 });
 
 export default router;

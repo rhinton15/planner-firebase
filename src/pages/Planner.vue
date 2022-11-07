@@ -149,8 +149,10 @@ import ToDoList from "../components/ToDoList.vue";
 
 import html2canvas from "html2canvas";
 
+// import { auth, db, functions } from "../firebase";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+// import { httpsCallable } from "firebase/functions";
 
 export default {
   components: {
@@ -181,16 +183,20 @@ export default {
   beforeUnmount() {
     clearInterval(this.timer);
   },
-  beforeMount() {
-    let dateAdjustment = (this.today.getDay() + 6) % 7;
+  async beforeMount() {
+    const today = new Date();
+    let dateAdjustment = (today.getDay() + 6) % 7;
     let startOfWeek = new Date(
-      this.today.getFullYear(),
-      this.today.getMonth(),
-      this.today.getDate() - dateAdjustment
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - dateAdjustment
     );
     this.currentWeek = `${startOfWeek.getFullYear()}-${
       startOfWeek.getMonth() + 1
     }-${startOfWeek.getDate()}`;
+
+    // const addAdmin = httpsCallable(functions, "addAdmin");
+    // await addAdmin({ email: "rhinton14@gmail.com" });
   },
   async mounted() {
     this.timer = setInterval(() => {

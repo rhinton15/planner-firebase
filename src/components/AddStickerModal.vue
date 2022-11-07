@@ -276,6 +276,9 @@
 // import Ombre from "./Ombre.vue";
 // import ThinStripes from "./ThinStripes.vue";
 import SvgSticker from "./SvgSticker.vue";
+import { ref, listAll } from "firebase/storage";
+import { storage } from "../firebase";
+
 
 export default {
   components: {
@@ -312,10 +315,8 @@ export default {
     },
   },
   async beforeCreate() {
-    const response = await fetch("http://localhost:3000/patterns");
-    const { patterns } = await response.json();
-
-    this.patterns = patterns;
+    const stickers = await listAll(ref(storage, 'stickers'))
+    this.patterns = stickers.items.map((itemRef) => itemRef.name.replace('.svg', ''));
   },
 };
 </script>

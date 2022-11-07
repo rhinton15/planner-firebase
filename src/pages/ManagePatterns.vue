@@ -38,7 +38,8 @@
 </template>
 
 <script>
-import axios from "axios";
+import { ref, uploadBytes } from "firebase/storage";
+import { storage } from "../firebase";
 
 export default {
   data() {
@@ -136,10 +137,20 @@ export default {
       reader.readAsText(this.selectedFile);
     },
     async onUpload() {
-      // https://www.youtube.com/watch?v=VqnJwh6E9ak
-      const fd = new FormData();
-      fd.append("image", this.selectedFile, this.selectedFile.name);
-      await axios.post("http://localhost:3000/admin/upload", fd);
+      // https://firebase.google.com/docs/storage/web/upload-files
+      const storageRef = ref(storage, `stickers/${this.selectedFile.name}`);
+
+      const metadata = {
+        cacheControl: "max-age=604800",
+      };
+
+      uploadBytes(
+        storageRef,
+        new Blob([this.processedFileContent], { type: "image/svg+xml" }),
+        metadata
+      ).then(() => {
+        console.log("Uploaded a blob or file!");
+      });
     },
   },
 };

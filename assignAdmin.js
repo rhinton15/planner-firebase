@@ -1,10 +1,5 @@
-// https://www.thisdot.co/blog/storing-your-notes-in-the-cloud-firestore-with-vuejs
-
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,8 +15,5 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 let auth = getAuth();
-let db = getFirestore();
-const functions = getFunctions();
-const storage = getStorage();
 
-export { auth, db, functions, storage };
+console.log(auth.currentUser.uid);

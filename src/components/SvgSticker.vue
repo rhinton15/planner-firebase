@@ -4,6 +4,9 @@
 </template>
 
 <script>
+import { ref, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
+
 export default {
   props: ["scale", "colors", "name"],
   emits: ["click"],
@@ -16,9 +19,8 @@ export default {
     };
   },
   async created() {
-    var response = await fetch(
-      `http://localhost:3000/stickers/${this.name}.svg`
-    );
+    var url = await getDownloadURL(ref(storage, `stickers/${this.name}.svg`));
+    var response = await fetch(url);
     // https://stackoverflow.com/questions/63633111/how-do-i-read-and-convert-a-local-svg-file-into-text
     let svgText = await response.text();
 
