@@ -28,10 +28,11 @@ export default {
 }
 
 dialog {
+  width: 96vw;
+  left: 2vw;
   position: fixed;
-  top: 10vh;
-  left: 0;
-  height: 80vh;
+  top: 2vh;
+  height: 96vh;
   margin: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
   border-radius: 12px;
@@ -63,8 +64,10 @@ dialog {
 
 @media (min-width: 500px) {
   dialog {
-    width: 30rem;
-    left: calc(50% - 15rem);
+    /* width: 96vw;
+    left: 2vw; */
+    /* width: 30rem;
+    left: calc(50% - 15rem); */
     /* width: 50rem;
     left: calc(50% - 25rem); */
   }

@@ -39,7 +39,7 @@
 
 <script>
 import { ref, uploadBytes } from "firebase/storage";
-import { storage } from "../firebase";
+import { storage } from "../../firebase";
 
 export default {
   data() {
@@ -69,7 +69,9 @@ export default {
     processedFileContent() {
       if (this.selectedFile && this.fileContent) {
         if (this.isPattern) {
-          const patternName = this.selectedFile.name.replace(".svg", "");
+          const patternName = this.selectedFile.name
+            .replace(".svg", "")
+            .replace(" ", "-");
 
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Groups_and_Backreferences
           const width = this.fileContent.match(/width="(.*)mm"/)[1];

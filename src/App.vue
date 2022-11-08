@@ -9,10 +9,11 @@ export default {
 </script>
 
 <style>
-@import "https://fonts.googleapis.com/css2?family=Montserrat&family=Petit+Formal+Script&family=Roboto&family=Roboto+Slab:wght@300&display=swap";
+/* @import "https://fonts.googleapis.com/css2?family=Montserrat&family=Petit+Formal+Script&family=Roboto&family=Roboto+Slab:wght@300&display=swap"; */
 /* @import "https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap"; */
-@import "https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cookie&family=Homemade+Apple&family=Ms+Madi&family=Rouge+Script&family=Sacramento&family=Shadows+Into+Light&family=Shadows+Into+Light+Two&family=Sue+Ellen+Francisco&family=Tillana&display=swap";
+/* @import "https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cookie&family=Homemade+Apple&family=Ms+Madi&family=Rouge+Script&family=Sacramento&family=Shadows+Into+Light&family=Shadows+Into+Light+Two&family=Sue+Ellen+Francisco&family=Tillana&display=swap"; */
 /* @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"; */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&family=Amatic+SC:wght@400;700&family=Atma&family=Barrio&family=Birthstone+Bounce&family=Bonbon&family=Butterfly+Kids&family=Codystar&family=Fredericka+the+Great&family=Hachi+Maru+Pop&family=Just+Another+Hand&family=Londrina+Outline&family=Luckiest+Guy&family=Ms+Madi&family=Nanum+Pen+Script&family=Oooh+Baby&family=Permanent+Marker&family=Ribeye+Marrow&family=Rochester&family=Rock+Salt&family=Sacramento&family=Send+Flowers&family=Shadows+Into+Light+Two&family=Special+Elite&family=Unkempt&family=Waiting+for+the+Sunrise&display=swap");
 
 #app {
   /* font-family: Avenir, Helvetica, Arial, sans-serif; */
@@ -35,33 +36,6 @@ export default {
 
 main {
   margin-top: 80px;
-}
-
-.page-title {
-  font-family: "Roboto Slab", serif;
-  font-size: 35px;
-  -webkit-print-color-adjust: exact;
-}
-
-.section-title {
-  font-family: "Petit Formal Script", cursive;
-  font-size: 30px;
-}
-
-.section-body {
-  font-family: "Montserrat", sans-serif;
-}
-
-.text-left {
-  text-align: left;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-center {
-  text-align: center;
 }
 
 .vert-align-middle {

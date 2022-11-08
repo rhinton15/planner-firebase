@@ -134,11 +134,11 @@ export default {
     today() {
       var today = new Date();
       // https://stackoverflow.com/questions/3224834/get-difference-between-2-dates-in-javascript
-      return (
+      return Math.round(
         (new Date(today.getFullYear(), today.getMonth(), today.getDate()) -
           this.firstDayCalendar) /
           (1000 * 60 * 60 * 24) +
-        1
+          1
       );
     },
     selectedWeek() {

@@ -27,8 +27,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/contactus",
+      component: () => import("../pages/ContactUs.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/admin/managePatterns",
-      component: () => import("../pages/ManagePatterns.vue"),
+      component: () => import("../pages/Admin/ManagePatterns.vue"),
+      meta: { requiresAdmin: true },
+    },
+    {
+      path: "/admin/feedback",
+      component: () => import("../pages/Admin/Feedback.vue"),
       meta: { requiresAdmin: true },
     },
   ],
