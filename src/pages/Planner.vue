@@ -342,10 +342,6 @@ export default {
           // position: sticker.position,
           // colors: sticker.colors,
           opacity: 1,
-          dimensions: {
-            width: 174,
-            height: 290,
-          },
           scale: 0,
           rotation: 0,
           border: {

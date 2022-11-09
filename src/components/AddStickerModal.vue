@@ -54,7 +54,7 @@
                         :name="pattern"
                         @click="
                           (colors) =>
-                            addSticker(pattern, colors)
+                            addSticker(pattern, colors, { width: 174, height: 290 })
                         "
                       ></svg-sticker>
                 </div>
@@ -92,9 +92,9 @@ export default {
     addToDo() {
       this.$emit("addToDo");
     },
-    addSticker(type, colors) {
+    addSticker(type, colors, dimensions) {
       // https://stackoverflow.com/questions/44149294/in-vue-js-how-can-i-emit-multiple-value-from-child-to-parent-while-parents-v-o
-      this.$emit("addSticker", { type, colors });
+      this.$emit("addSticker", { type, colors, dimensions });
     },
     hideModal() {
       this.$emit("close");
