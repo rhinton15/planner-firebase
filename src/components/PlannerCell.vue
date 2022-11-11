@@ -74,7 +74,7 @@ export default {
         type: properties.type,
         colors: properties.colors,
         position: { top: this.offsetTop, left: this.offsetLeft },
-        dimensions: { width: this.width, height: this.height },
+        dimensions: properties.dimensions,
       });
       this.hideModal();
     },

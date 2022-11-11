@@ -9,33 +9,84 @@
         class="form-control mb-2"
         v-model="fileName"
       />
-      <div v-if="!isPattern">
-        <label for="width">Width:</label>
-        <input
-          type="number"
-          id="width"
-          class="form-control mb-2"
-          v-model="dimensions.width"
-        />
-        <label for="height">Height:</label>
-        <input
-          type="number"
-          id="height"
-          class="form-control mb-2"
-          v-model="dimensions.height"
-        />
-      </div>
-      <div>
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value=""
-          id="flexCheckDefault"
-          v-model="isPattern"
-        />
-        <label class="form-check-label p-1" for="flexCheckDefault">
-          Pattern
-        </label>
+      <div class="row text-start">
+        <label class="col-12 fw-bold fs-4 text-center">Tags</label>
+        <div class="col-3">
+          <label class="fw-bold fs-5">Seasons</label>
+          <div class="form-check" v-for="tag in seasons" :key="tag">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              :id="`tag-${tag.replaceAll(' ', '-')}`"
+              :checked="tags.includes(tag)"
+              @click="toggleTag(tag)"
+            />
+            <label
+              class="form-check-label"
+              :for="`tag-${tag.replaceAll(' ', '-')}`"
+            >
+              {{ tag }}
+            </label>
+          </div>
+        </div>
+        <div class="col-3">
+          <label class="fw-bold fs-5">Holidays</label>
+          <div class="form-check" v-for="tag in holidays" :key="tag">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              :id="`tag-${tag.replaceAll(' ', '-')}`"
+              :checked="tags.includes(tag)"
+              @click="toggleTag(tag)"
+            />
+            <label
+              class="form-check-label"
+              :for="`tag-${tag.replaceAll(' ', '-')}`"
+            >
+              {{ tag }}
+            </label>
+          </div>
+        </div>
+        <div class="col-3">
+          <label class="fw-bold fs-5">Events</label>
+          <div class="form-check" v-for="tag in events" :key="tag">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              :id="`tag-${tag.replaceAll(' ', '-')}`"
+              :checked="tags.includes(tag)"
+              @click="toggleTag(tag)"
+            />
+            <label
+              class="form-check-label"
+              :for="`tag-${tag.replaceAll(' ', '-')}`"
+            >
+              {{ tag }}
+            </label>
+          </div>
+        </div>
+        <div class="col-3">
+          <label class="fw-bold fs-5">Categories</label>
+          <div class="form-check" v-for="tag in categories" :key="tag">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              :id="`tag-${tag.replaceAll(' ', '-')}`"
+              :checked="tags.includes(tag)"
+              @click="toggleTag(tag)"
+            />
+            <label
+              class="form-check-label"
+              :for="`tag-${tag.replaceAll(' ', '-')}`"
+            >
+              {{ tag }}
+            </label>
+          </div>
+        </div>
       </div>
       <div
         :style="
@@ -62,6 +113,18 @@
           "
         />
       </div>
+      <div>
+        <input
+          class="form-check-input"
+          type="checkbox"
+          value=""
+          id="flexCheckDefault"
+          v-model="isPattern"
+        />
+        <label class="form-check-label p-1" for="flexCheckDefault">
+          Pattern
+        </label>
+      </div>
       <div>TODO: name (what if duplicates?), tags</div>
       <button class="btn btn-outline-primary" @click="onUpload">Upload</button>
     </div>
@@ -86,6 +149,32 @@ export default {
         width: null,
         height: null,
       },
+      tags: [],
+      seasons: ["winter", "spring", "summer", "fall"],
+      holidays: [
+        "new year",
+        "valentine",
+        "st patrick",
+        "easter",
+        "memorial",
+        "independence",
+        "labor",
+        "thanksgiving",
+        "christmas",
+      ],
+      events: ["birthday", "wedding", "doctor"],
+      categories: [
+        "food",
+        "chore",
+        "school",
+        "games",
+        "sports",
+        "exercise",
+        "travel",
+        "hobbies",
+        "pets",
+        "weather",
+      ],
     };
   },
   watch: {
@@ -157,19 +246,6 @@ export default {
             /<svg[\s\S]*?>([\s\S]*?)<\/svg>/
           )[0];
 
-          // pattern = pattern.replace(`width="${width}mm"`, `width="${width}px"`);
-          // pattern = pattern.replace(
-          //   `height="${height}mm"`,
-          //   `height="${height}px"`
-          // );
-
-          // this.setDimensions({
-          //   width: Math.round(parseFloat(width)),
-          //   height: Math.round(parseFloat(height)),
-          // });
-          // this.dimensions.width = width;
-          // this.dimensions.height = height;
-
           pattern = pattern.replace(`width="${width}mm"`, `width="100%"`);
           pattern = pattern.replace(`height="${height}mm"`, `height="100%"`);
 
@@ -189,6 +265,7 @@ export default {
       this.colors[key] = newValue;
     },
     onFileSelected(event) {
+      this.tags = [];
       this.selectedFile = event.target.files[0];
 
       // only svg files allowed
@@ -225,6 +302,14 @@ export default {
     setDimensions(dimensions) {
       this.dimensions = { ...dimensions };
     },
+    toggleTag(tag) {
+      const index = this.tags.indexOf(tag);
+      if (index > -1) {
+        this.tags.splice(index, 1);
+      } else {
+        this.tags.push(tag);
+      }
+    },
     async onUpload() {
       // https://firebase.google.com/docs/storage/web/upload-files
       const storageRef = ref(storage, `stickers/${this.fileName}.svg`);
@@ -239,15 +324,13 @@ export default {
         new Blob([this.processedFileContent], { type: "image/svg+xml" }),
         metadata
       );
-      console.log("Uploaded a blob or file!");
 
       let stickerProps = {
-        pattern: this.isPattern, // is this needed, or will dimenions being null/notnull be enough? trying to save $$ on storage and sending data
-        tags: [],
+        tags: this.tags,
       };
 
       if (!this.isPattern) {
-        stickerProps.dimensions = this.dimensions;
+        stickerProps.ratio = this.dimensions.height / this.dimensions.width;
       }
 
       await setDoc(doc(db, "stickers", this.fileName), stickerProps);

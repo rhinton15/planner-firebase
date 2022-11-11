@@ -666,7 +666,6 @@ export default {
 
     this.updateOffset();
 
-    //this.rotation = -20;
     var dragging = false;
     var moving = false;
     var resizing = false;
@@ -674,176 +673,8 @@ export default {
     var dragHandle = $(this.$refs.drag);
     var resizeHandle = $(this.$refs.resize);
     var sticker = $(this.$refs.sticker);
-    // var elOfs = sticker.offset();
-    // var elPos = {
-    //   x: elOfs.left,
-    //   y: elOfs.top,
-    // };
-    var startPos; //= { x: this.left, y: this.top };
+    var startPos;
     var startShift;
-    // rotateHandle.mousedown(function () {
-    //   dragging = true;
-    // });
-    // resizeHandle.mousedown((e) => {
-    //   console.log("resizing");
-    //   resizing = true;
-    //   startPos = {
-    //     x: e.clientX,
-    //     y: e.clientY,
-    //   };
-    //   startShift = this.modelValue;
-    // });
-    // dragHandle.mousedown((e) => {
-    //   moving = true;
-    //   startPos = {
-    //     x: e.clientX,
-    //     y: e.clientY,
-    //   };
-    //   startShift = this.modelValue.position;
-    // });
-    // $(document).mouseup(function () {
-    //   dragging = false;
-    //   moving = false;
-    //   resizing = false;
-    // });
-    // $(document).mousemove((e) => {
-    //   if (dragging) {
-    //     var mPos = {
-    //       x:
-    //         e.pageX -
-    //         (elPos.x +
-    //           this.modelValue.position.left +
-    //           this.offsetLeft +
-    //           sticker.width() / 2),
-    //       y: -(
-    //         e.pageY -
-    //         (sticker.height() / 2 +
-    //           elPos.y +
-    //           this.modelValue.position.top +
-    //           this.offsetTop) -
-    //         0
-    //       ),
-    //     };
-    //     console.log(mPos);
-    //     var getAtan = Math.atan2(mPos.y, mPos.x);
-    //     var getDeg =
-    //       (Math.atan2(sticker.width() / 2, sticker.width() / 2) - getAtan) /
-    //       (Math.PI / 180);
-    //     this.rotation = getDeg;
-
-    //     var rem = Math.abs(this.rotation % 90);
-    //     if (rem < 10 || rem > 80) {
-    //       this.rotation = Math.round(this.rotation / 90) * 90;
-    //     }
-    //   } else if (moving) {
-    //     var newX = startShift.left + e.clientX - startPos.x;
-    //     var newY = startShift.top + e.clientY - startPos.y;
-
-    //     var remX = Math.abs(newX % 174);
-    //     if (remX < 10 || remX > 166) {
-    //       newX = Math.round(newX / 174) * 174;
-    //     }
-    //     var remY = Math.abs(newY % 290);
-    //     if (remY < 10 || remY > 280) {
-    //       newY = Math.round(newY / 290) * 290;
-    //     }
-
-    //     this.$emit("update:modelValue", {
-    //       ...this.modelValue,
-    //       position: { top: newY, left: newX },
-    //     });
-    //   } else if (resizing) {
-    //     var newWidth =
-    //       startShift.dimensions.width +
-    //       (e.clientX * Math.cos(this.rotationRadians) +
-    //         e.clientY * Math.sin(this.rotationRadians)) -
-    //       (startPos.x * Math.cos(this.rotationRadians) +
-    //         startPos.y * Math.sin(this.rotationRadians));
-    //     var newHeight =
-    //       startShift.dimensions.height -
-    //       (e.clientX * Math.sin(this.rotationRadians) -
-    //         e.clientY * Math.cos(this.rotationRadians)) +
-    //       (startPos.x * Math.sin(this.rotationRadians) -
-    //         startPos.y * Math.cos(this.rotationRadians));
-
-    //     var remWidth = Math.abs(newWidth % 174);
-    //     if (remWidth < 10 || remWidth > 166) {
-    //       newWidth = Math.round(newWidth / 174) * 174;
-    //     }
-    //     var remHeight = Math.abs(newHeight % 290);
-    //     if (remHeight < 10 || remHeight > 280) {
-    //       newHeight = Math.round(newHeight / 290) * 290;
-    //     }
-
-    //     let newDimensions = {
-    //       width: Math.max(Math.round(newWidth), 5),
-    //       height: Math.max(Math.round(newHeight), 5),
-    //     };
-
-    //     let newPosition = this.modelValue.position;
-
-    //     const rotation = ((this.modelValue.rotation % 360) + 360) % 360;
-    //     const rotationRad = ((rotation % 90) * Math.PI) / 180;
-    //     const sinRotation = Math.sin(rotationRad);
-    //     const cosRotation = Math.cos(rotationRad);
-    //     console.log(sinRotation);
-    //     if (rotation < 90) {
-    //       newPosition = {
-    //         top: this.modelValue.position.top,
-    //         left:
-    //           this.modelValue.position.left -
-    //           sinRotation *
-    //             (newDimensions.height - this.modelValue.dimensions.height),
-    //       };
-    //     } else if (rotation < 180) {
-    //       newPosition = {
-    //         top:
-    //           this.modelValue.position.top -
-    //           sinRotation *
-    //             (newDimensions.height - this.modelValue.dimensions.height),
-    //         left:
-    //           this.modelValue.position.left -
-    //           (sinRotation *
-    //             (newDimensions.width - this.modelValue.dimensions.width) +
-    //             cosRotation *
-    //               (newDimensions.height - this.modelValue.dimensions.height)),
-    //       };
-    //     } else if (rotation < 270) {
-    //       newPosition = {
-    //         top:
-    //           this.modelValue.position.top -
-    //           (sinRotation *
-    //             (newDimensions.width - this.modelValue.dimensions.width) +
-    //             cosRotation *
-    //               (newDimensions.height - this.modelValue.dimensions.height)),
-    //         left:
-    //           this.modelValue.position.left -
-    //           cosRotation *
-    //             (newDimensions.width - this.modelValue.dimensions.width),
-    //       };
-    //     } else {
-    //       newPosition = {
-    //         top:
-    //           this.modelValue.position.top -
-    //           cosRotation *
-    //             (newDimensions.width - this.modelValue.dimensions.width),
-    //         left: this.modelValue.position.left,
-    //       };
-    //     }
-
-    //     this.$emit("update:modelValue", {
-    //       ...this.modelValue,
-    //       dimensions: newDimensions,
-    //       position: newPosition,
-    //     });
-    //   }
-    // });
-
-    // $(document).mousedown((e) => {
-    //   if ($(sticker).parent().has(e.target).length == 0) {
-    //     this.isFocused = false;
-    //   }
-    // });
 
     rotateHandle.on("mousedown touchstart", function () {
       dragging = true;
@@ -943,32 +774,7 @@ export default {
         };
       }
       if (dragging) {
-        // var mPos = {
-        //   x:
-        //     e.pageX -
-        //     (elPos.x +
-        //       this.modelValue.position.left +
-        //       this.offsetLeft +
-        //       sticker.width() / 2),
-        //   y: -(
-        //     e.pageY -
-        //     (sticker.height() / 2 +
-        //       elPos.y +
-        //       this.modelValue.position.top +
-        //       this.offsetTop) -
-        //     0
-        //   ),
-        // };
-        // console.log(mPos);
-        // var getAtan = Math.atan2(mPos.y, mPos.x);
-        // var getDeg =
-        //   (Math.atan2(sticker.width() / 2, sticker.width() / 2) - getAtan) /
-        //   (Math.PI / 180);
-        // this.rotation = getDeg;
-        // var rem = Math.abs(this.rotation % 90);
-        // if (rem < 10 || rem > 80) {
-        //   this.rotation = Math.round(this.rotation / 90) * 90;
-        // }
+        // TODO: rotate handle
       } else if (moving) {
         var newX = startShift.left + ePos.x - startPos.x;
         var newY = startShift.top + ePos.y - startPos.y;
@@ -1009,10 +815,22 @@ export default {
           newHeight = Math.round(newHeight / this.snapHeight) * this.snapHeight;
         }
 
+        if (this.modelValue.dimensions.ratio) {
+          var ratioWidth = newHeight / this.modelValue.dimensions.ratio;
+          var ratioHeight = newWidth * this.modelValue.dimensions.ratio;
+
+          newWidth = Math.min(newWidth, ratioWidth);
+          newHeight = Math.min(newHeight, ratioHeight);
+        }
+
         let newDimensions = {
           width: Math.max(Math.round(newWidth), 5),
           height: Math.max(Math.round(newHeight), 5),
         };
+
+        if (this.modelValue.dimensions.ratio) {
+          newDimensions.ratio = this.modelValue.dimensions.ratio;
+        }
 
         let newPosition = this.modelValue.position;
 

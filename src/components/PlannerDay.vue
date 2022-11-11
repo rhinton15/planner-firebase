@@ -1,10 +1,5 @@
 <template>
   <div class="d-flex flex-column" style="margin-bottom: 10rem">
-    <label
-      style="font-family: 'Amatic SC', cursive; font-weight: 700"
-      class="w-100 text-center fs-1"
-      >{{ date }}</label
-    >
     <planner-cell
       v-for="cell in 3"
       :key="cell"

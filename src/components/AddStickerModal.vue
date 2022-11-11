@@ -43,18 +43,18 @@
               <div class="d-flex flex-wrap">
                 <div class="m-2"
                         v-for="pattern in patterns"
-                        :key="pattern"
+                        :key="pattern.id"
                 >
 
               <svg-sticker
-                        style="
-                          width: 174px !important;
+                        :style="`
+                          width: ${290/(pattern.ratio || 5/3)}px !important;
                           height: 290px !important;
-                        "
-                        :name="pattern"
+                        `"
+                        :name="pattern.id"
                         @click="
                           (colors) =>
-                            addSticker(pattern, colors, { width: 174, height: 290 })
+                            addSticker(pattern.id, colors, { width: 290/(pattern.ratio || 5/3), height: 290, ratio: pattern.ratio })
                         "
                       ></svg-sticker>
                 </div>
@@ -70,9 +70,8 @@
 
 <script>
 import SvgSticker from "./SvgSticker.vue";
-import { ref, listAll } from "firebase/storage";
-import { storage } from "../firebase";
-
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default {
   components: {
@@ -101,8 +100,10 @@ export default {
     },
   },
   async beforeCreate() {
-    const stickers = await listAll(ref(storage, 'stickers'))
-    this.patterns = stickers.items.map((itemRef) => itemRef.name.replace('.svg', ''));
+    const querySnapshot = await getDocs(collection(db, "stickers"));
+querySnapshot.forEach((doc) => {
+  this.patterns.push({ id: doc.id, ...doc.data()});
+});
   },
 };
 </script>

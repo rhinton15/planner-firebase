@@ -4,24 +4,61 @@
     <div class="d-inline-flex">
       <calendar-select v-model="currentWeek"></calendar-select>
       <div class="d-flex flex-column" ref="planner">
-        <div class="d-flex justify-content-between align-items-center">
-          <button class="btn btn-default fs-2" @click="prevWeek">
-            <font-awesome-icon icon="fa-solid fa-chevron-left" />
-          </button>
-          <h1>
-            {{
-              new Date(
-                parseInt(currentWeek.split("-")[0]),
-                parseInt(currentWeek.split("-")[1]) - 1
-              ).toLocaleString("default", {
-                month: "long",
-              })
-            }}
-            {{ parseInt(currentWeek.split("-")[0]) }}
-          </h1>
-          <button class="btn btn-default fs-2" @click="nextWeek">
-            <font-awesome-icon icon="fa-solid fa-chevron-right" />
-          </button>
+        <div>
+          <div ref="header">
+            <div class="clickable" @click="editHeader">
+              <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-default fs-2" @click="prevWeek">
+                  <font-awesome-icon icon="fa-solid fa-chevron-left" />
+                </button>
+                <h1
+                  :style="`
+                font-family: '${headerSettings.month.family}';
+                font-weight: ${headerSettings.month.bold ? 700 : 400};
+                font-size: ${headerSettings.month.size}px !important;
+                color: ${headerSettings.month.color};`"
+                >
+                  {{
+                    new Date(
+                      parseInt(currentWeek.split("-")[0]),
+                      parseInt(currentWeek.split("-")[1]) - 1
+                    ).toLocaleString("default", {
+                      month: "long",
+                    })
+                  }}
+                  {{ parseInt(currentWeek.split("-")[0]) }}
+                </h1>
+                <button class="btn btn-default fs-2" @click="nextWeek">
+                  <font-awesome-icon icon="fa-solid fa-chevron-right" />
+                </button>
+              </div>
+              <div class="d-inline-flex" v-if="level === 'week'">
+                <label
+                  v-for="day in 7"
+                  :key="day"
+                  :style="`
+                font-family: '${headerSettings.day.family}', cursive;
+                font-weight: ${headerSettings.day.bold ? 700 : 400};
+                font-size: ${headerSettings.day.size}px !important;
+                color: ${headerSettings.day.color};
+                width: 174px;
+              `"
+                  class="text-center fs-1"
+                  >{{
+                    new Date(
+                      parseInt(currentWeek.split("-")[0]),
+                      parseInt(currentWeek.split("-")[1]) - 1,
+                      day + parseInt(currentWeek.split("-")[2]) - 1
+                    ).getDate()
+                  }}</label
+                >
+              </div>
+            </div>
+            <planner-header-settings
+              v-if="editingHeader"
+              v-model="headerSettings"
+            ></planner-header-settings>
+          </div>
         </div>
         <div ref>
           <div class="d-inline-flex" v-if="level === 'week'">
@@ -146,6 +183,7 @@ import PlannerDay from "../components/PlannerDay.vue";
 import Sticker from "../components/Sticker.vue";
 import SvgSticker from "../components/SvgSticker.vue";
 import ToDoList from "../components/ToDoList.vue";
+import PlannerHeaderSettings from "../components/PlannerHeaderSettings.vue";
 
 import html2canvas from "html2canvas";
 
@@ -153,6 +191,8 @@ import html2canvas from "html2canvas";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 // import { httpsCallable } from "firebase/functions";
+
+import $ from "jquery";
 
 export default {
   components: {
@@ -162,6 +202,7 @@ export default {
     SvgSticker,
     CalendarSelect,
     ToDoList,
+    PlannerHeaderSettings,
   },
   data() {
     return {
@@ -177,6 +218,21 @@ export default {
       currentWeek: null,
       pendingChanges: false,
       output: "",
+      headerSettings: {
+        month: {
+          color: "#000000",
+          family: "Montserrat",
+          size: 40,
+          bold: false,
+        },
+        day: {
+          color: "#000000",
+          family: "Amatic SC",
+          size: 40,
+          bold: true,
+        },
+      },
+      editingHeader: false,
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -204,6 +260,13 @@ export default {
         this.saveChanges(this.currentWeek);
       }
     }, 10000);
+
+    var header = $(this.$refs.header);
+    $(document).on("mousedown touchstart", (e) => {
+      if ($(header).parent().has(e.target).length == 0) {
+        this.editingHeader = false;
+      }
+    });
   },
   // https://stackoverflow.com/questions/34283891/vue-js-watch-array-of-objects
   watch: {
@@ -225,6 +288,15 @@ export default {
       },
       deep: true,
     },
+    headerSettings: {
+      handler: function () {
+        this.pendingChanges = true;
+        this.$nextTick(() => {
+          $(window).resize();
+        });
+      },
+      deep: true,
+    },
     currentWeek: {
       handler: function (newVal, oldVal) {
         if (this.pendingChanges) {
@@ -238,6 +310,7 @@ export default {
   },
   methods: {
     prevWeek() {
+      console.log("prev week");
       const currentWeekSplit = this.currentWeek.split("-");
       if (currentWeekSplit.length === 2) {
         this.setMonth(currentWeekSplit[0], currentWeekSplit[1] - 2);
@@ -426,6 +499,20 @@ export default {
         this.texts = res?.text || [];
         this.todos = res?.todo || [];
         this.stickers = res?.stickers || [];
+        this.headerSettings = res?.header || {
+          month: {
+            color: "#000000",
+            family: "Montserrat",
+            size: 40,
+            bold: false,
+          },
+          day: {
+            color: "#000000",
+            family: "Amatic SC",
+            size: 40,
+            bold: true,
+          },
+        };
 
         this.stickers.forEach((sticker) => {
           // sticker.properties.scale = sticker.properties.scale || 1;
@@ -438,12 +525,16 @@ export default {
     async saveChanges(week) {
       if (this.pageLoaded) {
         await setDoc(doc(db, "users", auth.currentUser.uid, "planner", week), {
+          header: this.headerSettings,
           text: this.texts,
           todo: this.todos,
           stickers: this.stickers,
         });
         this.pendingChanges = false;
       }
+    },
+    editHeader() {
+      this.editingHeader = true;
     },
   },
   computed: {
@@ -474,3 +565,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+</style>
