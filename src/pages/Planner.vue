@@ -1,179 +1,222 @@
 <template>
-  <!-- <div> -->
-  <div class="m-auto position-relative" ref="page">
-    <div class="d-inline-flex">
-      <calendar-select v-model="currentWeek"></calendar-select>
-      <div class="d-flex flex-column" ref="planner">
-        <div>
-          <div ref="header">
-            <div class="clickable" @click="editHeader">
-              <div class="d-flex justify-content-between align-items-center">
-                <button class="btn btn-default fs-2" @click="prevWeek">
-                  <font-awesome-icon icon="fa-solid fa-chevron-left" />
-                </button>
-                <h1
-                  :style="`
+  <div>
+    <div class="m-auto position-relative" ref="page">
+      <div class="d-inline-flex">
+        <div class="d-flex flex-column">
+          <button class="btn btn-outline-primary" @click="toggleTutorial">
+            Help
+          </button>
+          <button
+            :class="`btn btn-${saveButton.class}`"
+            :disabled="saveButton.disabled"
+            @click="saveChanges(currentWeek)"
+          >
+            <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
+            {{ saveButton.text }}
+          </button>
+          <calendar-select v-model="currentWeek"></calendar-select>
+        </div>
+        <div class="d-flex flex-column" ref="planner">
+          <div>
+            <div ref="header">
+              <div class="clickable" @click="editHeader">
+                <div class="d-flex justify-content-between align-items-center">
+                  <button class="btn btn-default fs-2" @click="prevWeek">
+                    <font-awesome-icon icon="fa-solid fa-chevron-left" />
+                  </button>
+                  <h1
+                    :style="`
                 font-family: '${headerSettings.month.family}';
                 font-weight: ${headerSettings.month.bold ? 700 : 400};
                 font-size: ${headerSettings.month.size}px !important;
                 color: ${headerSettings.month.color};`"
-                >
-                  {{
-                    new Date(
-                      parseInt(currentWeek.split("-")[0]),
-                      parseInt(currentWeek.split("-")[1]) - 1
-                    ).toLocaleString("default", {
-                      month: "long",
-                    })
-                  }}
-                  {{ parseInt(currentWeek.split("-")[0]) }}
-                </h1>
-                <button class="btn btn-default fs-2" @click="nextWeek">
-                  <font-awesome-icon icon="fa-solid fa-chevron-right" />
-                </button>
-              </div>
-              <div class="d-inline-flex" v-if="level === 'week'">
-                <label
-                  v-for="day in 7"
-                  :key="day"
-                  :style="`
+                  >
+                    {{
+                      new Date(
+                        parseInt(currentWeek.split("-")[0]),
+                        parseInt(currentWeek.split("-")[1]) - 1
+                      ).toLocaleString("default", {
+                        month: "long",
+                      })
+                    }}
+                    {{ parseInt(currentWeek.split("-")[0]) }}
+                  </h1>
+                  <button class="btn btn-default fs-2" @click="nextWeek">
+                    <font-awesome-icon icon="fa-solid fa-chevron-right" />
+                  </button>
+                </div>
+                <div class="d-inline-flex" v-if="level === 'week'">
+                  <label
+                    v-for="day in 7"
+                    :key="day"
+                    :style="`
+                font-family: '${headerSettings.day.family}', cursive;
+                font-weight: ${headerSettings.day.bold ? 700 : 400};
+                font-size: ${headerSettings.day.size * 0.7}px !important;
+                color: ${headerSettings.day.color};
+                width: 174px;
+              `"
+                    class="text-center fs-1"
+                    >{{
+                      new Date(
+                        parseInt(currentWeek.split("-")[0]),
+                        parseInt(currentWeek.split("-")[1]) - 1,
+                        day + parseInt(currentWeek.split("-")[2]) - 1
+                      ).toLocaleString("default", {
+                        weekday: "long",
+                      })
+                    }}</label
+                  >
+                </div>
+                <div class="d-inline-flex" v-if="level === 'week'">
+                  <label
+                    v-for="day in 7"
+                    :key="day"
+                    :style="`
                 font-family: '${headerSettings.day.family}', cursive;
                 font-weight: ${headerSettings.day.bold ? 700 : 400};
                 font-size: ${headerSettings.day.size}px !important;
                 color: ${headerSettings.day.color};
                 width: 174px;
               `"
-                  class="text-center fs-1"
-                  >{{
-                    new Date(
-                      parseInt(currentWeek.split("-")[0]),
-                      parseInt(currentWeek.split("-")[1]) - 1,
-                      day + parseInt(currentWeek.split("-")[2]) - 1
-                    ).getDate()
-                  }}</label
-                >
+                    class="text-center fs-1"
+                    >{{
+                      new Date(
+                        parseInt(currentWeek.split("-")[0]),
+                        parseInt(currentWeek.split("-")[1]) - 1,
+                        day + parseInt(currentWeek.split("-")[2]) - 1
+                      ).getDate()
+                    }}</label
+                  >
+                </div>
               </div>
+              <planner-header-settings
+                v-if="editingHeader"
+                v-model="headerSettings"
+              ></planner-header-settings>
             </div>
-            <planner-header-settings
-              v-if="editingHeader"
-              v-model="headerSettings"
-            ></planner-header-settings>
           </div>
-        </div>
-        <div ref>
-          <div class="d-inline-flex" v-if="level === 'week'">
-            <!-- https://v2.vuejs.org/v2/guide/list.html#v-for-with-a-Range -->
-            <planner-day
-              v-for="day in 7"
-              :key="day"
-              :date="
-                new Date(
-                  parseInt(currentWeek.split('-')[0]),
-                  parseInt(currentWeek.split('-')[1]) - 1,
-                  day + parseInt(currentWeek.split('-')[2]) - 1
-                ).getDate()
-              "
-              :index="day"
-              :disabled="!pageLoaded"
-              @addText="addText"
-              @addToDo="addToDo"
-              @addSticker="addSticker"
-            ></planner-day>
-          </div>
-          <div v-else-if="level === 'month'">
-            <planner-month
-              :year="parseInt(currentWeek.split('-')[0])"
-              :month="parseInt(currentWeek.split('-')[1])"
-              :disabled="!pageLoaded"
-              :width="174"
-              :height="cellHeight"
-              @addText="addText"
-              @addToDo="addToDo"
-              @addSticker="addSticker"
-            ></planner-month>
-          </div>
+          <div ref>
+            <div class="d-inline-flex" v-if="level === 'week'">
+              <!-- https://v2.vuejs.org/v2/guide/list.html#v-for-with-a-Range -->
+              <planner-day
+                v-for="day in 7"
+                :key="day"
+                :date="
+                  new Date(
+                    parseInt(currentWeek.split('-')[0]),
+                    parseInt(currentWeek.split('-')[1]) - 1,
+                    day + parseInt(currentWeek.split('-')[2]) - 1
+                  ).getDate()
+                "
+                :index="day"
+                :disabled="!pageLoaded"
+                @addText="addText"
+                @addToDo="addToDo"
+                @addSticker="addSticker"
+              ></planner-day>
+            </div>
+            <div v-else-if="level === 'month'">
+              <planner-month
+                :year="parseInt(currentWeek.split('-')[0])"
+                :month="parseInt(currentWeek.split('-')[1])"
+                :disabled="!pageLoaded"
+                :width="174"
+                :height="cellHeight"
+                @addText="addText"
+                @addToDo="addToDo"
+                @addSticker="addSticker"
+              ></planner-month>
+            </div>
 
-          <!-- https://vuejs.org/guide/essentials/list.html#v-for -->
-          <sticker
-            :ref="'sticker-' + index"
-            :id="index"
-            v-for="(sticker, index) in stickers"
-            :key="sticker"
-            v-model="sticker.properties"
-            :snapHeight="cellHeight"
-            @delete="deleteSticker"
-            @moveToFront="moveToFront"
-            @moveUp="moveUp"
-            @moveDown="moveDown"
-            @moveToBack="moveToBack"
-            @duplicate="(index) => duplicate('sticker', stickers, index)"
-          >
-            <svg-sticker
-              :scale="sticker.properties.scale"
-              :colors="sticker.properties.colors"
-              :name="sticker.type"
-            ></svg-sticker>
-          </sticker>
-          <sticker
-            :id="index"
-            v-for="(text, index) in texts"
-            :key="text"
-            :snapHeight="cellHeight"
-            v-model="text.properties"
-            @delete="deleteText"
-            @update:modelValue="auto_grow($refs[`text-${index}`][0], text)"
-          >
-            <template #text>
-              <textarea
-                :ref="'text-' + index"
-                :style="{
-                  color: text.properties.font.color,
-                  fontFamily: text.properties.font.family,
-                  fontWeight: 400,
-                  fontSize: text.properties.font.size + 'px !important',
-                  resize: 'none',
-                  width:
-                    text.properties.dimensions.width -
-                    2 *
-                      (text.properties.border.width +
-                        text.properties.border.inset) *
-                      text.properties.border.on +
-                    'px',
-                  height: '100%',
-                }"
-                :colors="text.properties.colors"
-                :class="`text-${
-                  text.properties.align
-                } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-                  text.properties.font.bold ? 'fw-bold' : ''
-                }`"
-                v-model="text.text"
-                @input="auto_grow($event.target, text)"
-              ></textarea>
-            </template>
-          </sticker>
-          <sticker
-            :id="index"
-            v-for="(text, index) in todos"
-            :key="text"
-            :snapHeight="cellHeight"
-            v-model="text.properties"
-            @delete="deleteToDo"
-          >
-            <to-do-list v-model="text.properties"></to-do-list>
-          </sticker>
+            <!-- https://vuejs.org/guide/essentials/list.html#v-for -->
+            <sticker
+              :ref="'sticker-' + index"
+              :id="index"
+              v-for="(sticker, index) in stickers"
+              :key="sticker"
+              v-model="sticker.properties"
+              :snapHeight="cellHeight"
+              @delete="deleteSticker"
+              @moveToFront="moveToFront"
+              @moveUp="moveUp"
+              @moveDown="moveDown"
+              @moveToBack="moveToBack"
+              @duplicate="(index) => duplicate('sticker', stickers, index)"
+            >
+              <svg-sticker
+                :scale="sticker.properties.scale"
+                :colors="sticker.properties.colors"
+                :name="sticker.type"
+              ></svg-sticker>
+            </sticker>
+            <sticker
+              :id="index"
+              v-for="(text, index) in texts"
+              :key="text"
+              :snapHeight="cellHeight"
+              v-model="text.properties"
+              @delete="deleteText"
+              @update:modelValue="auto_grow($refs[`text-${index}`][0], text)"
+            >
+              <template #text>
+                <textarea
+                  :ref="'text-' + index"
+                  :style="{
+                    color: text.properties.font.color,
+                    fontFamily: text.properties.font.family,
+                    fontWeight: 400,
+                    fontSize: text.properties.font.size + 'px !important',
+                    resize: 'none',
+                    width:
+                      text.properties.dimensions.width -
+                      2 *
+                        (text.properties.border.width +
+                          text.properties.border.inset) *
+                        text.properties.border.on +
+                      'px',
+                    height: '100%',
+                  }"
+                  :colors="text.properties.colors"
+                  :class="`text-${
+                    text.properties.align
+                  } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
+                    text.properties.font.bold ? 'fw-bold' : ''
+                  }`"
+                  v-model="text.text"
+                  @input="auto_grow($event.target, text)"
+                ></textarea>
+              </template>
+            </sticker>
+            <sticker
+              :id="index"
+              v-for="(text, index) in todos"
+              :key="text"
+              :snapHeight="cellHeight"
+              v-model="text.properties"
+              @delete="deleteToDo"
+            >
+              <to-do-list v-model="text.properties"></to-do-list>
+            </sticker>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- <button class="btn btn-outline-primary" @click="createPng">
+    <!-- <button class="btn btn-outline-primary" @click="createPng">
       Screenshot
     </button>
     <a id="downloadLnk" download="screenshot.jpeg" :href="output"
       >Download as image</a
     >
     <img :src="output" style="width: 250px" /> -->
-  <!-- </div> -->
+    <base-modal :open="showingTutorial" @close="toggleTutorial">
+      <img
+        src="@/assets/tutorial.jpg"
+        class="w-100 h-100"
+        style="object-fit: contain"
+      />
+    </base-modal>
+  </div>
 </template>
 
 <script>
@@ -233,6 +276,8 @@ export default {
         },
       },
       editingHeader: false,
+      showingTutorial: false,
+      saveStatus: "saved",
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -251,15 +296,21 @@ export default {
       startOfWeek.getMonth() + 1
     }-${startOfWeek.getDate()}`;
 
+    const docSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+    this.showingTutorial = !docSnap.exists();
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+      new: false,
+    });
+
     // const addAdmin = httpsCallable(functions, "addAdmin");
-    // await addAdmin({ email: "rhinton14@gmail.com" });
+    // await addAdmin({ email: "test@example.com" });
   },
   async mounted() {
     this.timer = setInterval(() => {
       if (this.pendingChanges) {
         this.saveChanges(this.currentWeek);
       }
-    }, 10000);
+    }, 60000); // save once per minute
 
     var header = $(this.$refs.header);
     $(document).on("mousedown touchstart", (e) => {
@@ -297,6 +348,9 @@ export default {
       },
       deep: true,
     },
+    pendingChanges(newValue) {
+      this.saveStatus = newValue ? "unsaved" : "saved";
+    },
     currentWeek: {
       handler: function (newVal, oldVal) {
         if (this.pendingChanges) {
@@ -310,7 +364,6 @@ export default {
   },
   methods: {
     prevWeek() {
-      console.log("prev week");
       const currentWeekSplit = this.currentWeek.split("-");
       if (currentWeekSplit.length === 2) {
         this.setMonth(currentWeekSplit[0], currentWeekSplit[1] - 2);
@@ -358,8 +411,8 @@ export default {
           },
           font: {
             bold: false,
-            size: 40,
-            family: "Amatic SC",
+            size: 34,
+            family: "Shadows Into Light Two",
             color: "#000000",
           },
           rotation: 0,
@@ -394,7 +447,7 @@ export default {
           font: {
             bold: false,
             size: 40,
-            family: "Amatic SC",
+            family: "Waiting for the Sunrise",
             color: "#000000",
           },
           rotation: 0,
@@ -520,24 +573,77 @@ export default {
           sticker.properties.align = sticker.properties.align || "center";
           // delete sticker.rotation;
         }); // assign default value
+
+        this.$nextTick(() => {
+          this.pendingChanges = false;
+        });
       }
     },
     async saveChanges(week) {
       if (this.pageLoaded) {
-        await setDoc(doc(db, "users", auth.currentUser.uid, "planner", week), {
-          header: this.headerSettings,
-          text: this.texts,
-          todo: this.todos,
-          stickers: this.stickers,
-        });
-        this.pendingChanges = false;
+        this.saveStatus = "saving";
+        try {
+          await setDoc(
+            doc(db, "users", auth.currentUser.uid, "planner", week),
+            {
+              header: this.headerSettings,
+              text: this.texts,
+              todo: this.todos,
+              stickers: this.stickers,
+            }
+          );
+          this.pendingChanges = false;
+        } catch (ex) {
+          this.saveStatus = "error";
+        }
       }
     },
     editHeader() {
       this.editingHeader = true;
     },
+    toggleTutorial() {
+      this.showingTutorial = !this.showingTutorial;
+    },
   },
   computed: {
+    saveButton() {
+      let buttonConfig = {};
+      switch (this.saveStatus) {
+        case "unsaved":
+          buttonConfig = {
+            class: "warning text-white",
+            disabled: false,
+            icon: "floppy-disk",
+            text: "Unsaved changes",
+          };
+          break;
+        case "saving":
+          buttonConfig = {
+            class: "light text-white",
+            disabled: true,
+            icon: "spinner",
+            text: "Saving",
+          };
+          break;
+        case "saved":
+          buttonConfig = {
+            class: "primary text-white",
+            disabled: true,
+            icon: "check",
+            text: "Saved",
+          };
+          break;
+        case "error":
+          buttonConfig = {
+            class: "danger text-white",
+            disabled: true,
+            icon: "exclamation",
+            text: "Error saving",
+          };
+          break;
+      }
+      return buttonConfig;
+    },
     today() {
       // https://stackoverflow.com/questions/17545708/parse-date-without-timezone-javascript
       var date = new Date();

@@ -20,17 +20,14 @@
         boundingBox.dimensions.width +
         'px; height: ' +
         boundingBox.dimensions.height +
-        'px; opacity: ' +
-        this.modelValue.opacity +
-        ';'
+        'px; pointer-events: none; '
       "
       v-if="visible"
-      @click="focusSticker"
     >
       <div
         class="position-absolute"
         :style="
-          'transform: rotate(' +
+          'pointer-events: auto; transform: rotate(' +
           this.modelValue.rotation +
           'deg); margin-top: ' +
           boundingBox.margins.top +
@@ -38,10 +35,13 @@
           boundingBox.margins.left +
           'px;'
         "
+        @click="focusSticker"
       >
         <div
           :style="
-            (this.isFocused ? 'opacity: 75%;' : '') +
+            (this.isFocused
+              ? `opacity: ${75 * modelValue.opacity}%;`
+              : `opacity: ${modelValue.opacity};`) +
             'width: ' +
             this.modelValue.dimensions.width +
             'px; height: ' +
@@ -502,6 +502,7 @@
         </div>
       </div>
     </div>
+    <div v-if="isFocused" class="backdrop" @click="removeFocus"></div>
   </div>
 </template>
 
@@ -654,6 +655,9 @@ export default {
       // https://stackoverflow.com/questions/11634770/get-position-offset-of-element-relative-to-a-parent-container
       this.offsetTop = cell1.offsetTop;
       this.offsetLeft = cell1.offsetLeft;
+    },
+    removeFocus() {
+      this.isFocused = false;
     },
   },
   beforeUpdate() {
@@ -920,5 +924,15 @@ export default {
   top: 10px;
   left: 10px;
   border: 3px solid white;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0);
 }
 </style>

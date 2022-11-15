@@ -3,6 +3,14 @@
     <div v-if="open" class="backdrop" @click="$emit('close')"></div>
     <transition name="modal">
       <dialog open v-if="open">
+        <div class="position-absolute top-0 end-0 p-3">
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            @click="$emit('close')"
+          ></button>
+        </div>
         <slot></slot>
       </dialog>
     </transition>
@@ -23,7 +31,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100vh;
-  z-index: 10;
+  z-index: 1040;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -38,7 +46,7 @@ dialog {
   border-radius: 12px;
   padding: 1rem;
   background-color: white;
-  z-index: 100;
+  z-index: 1050;
   border: none;
 }
 

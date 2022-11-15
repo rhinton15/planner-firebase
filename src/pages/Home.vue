@@ -1,8 +1,9 @@
 <template>
-  <div>
+  <div>Home!</div>
+  <!-- <div>
     Hello {{ getCurrentUser().displayName }}
     <button class="btn btn-outline-primary" @click="logout">Logout</button>
-  </div>
+  </div> -->
 </template>
 
 <script>

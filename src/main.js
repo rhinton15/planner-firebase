@@ -32,6 +32,10 @@ import {
   faChevronLeft,
   faChevronRight,
   faBold,
+  faFloppyDisk,
+  faSpinner,
+  faCheck,
+  faExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
 /* add icons to the library */
@@ -50,7 +54,11 @@ library.add(
   faTimes,
   faChevronLeft,
   faChevronRight,
-  faBold
+  faBold,
+  faFloppyDisk,
+  faSpinner,
+  faCheck,
+  faExclamation
 );
 
 // don't load app until firebase is initialized

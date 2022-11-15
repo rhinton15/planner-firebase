@@ -9,7 +9,7 @@
             <h5 class="card-title">Text</h5>
             <p class="card-text">
               <span
-                style="font-family: 'Amatic SC'; font-weight: 700; resize: none"
+                style="font-family: 'Shadows Into Light Two'; font-weight: 400; resize: none"
                 class="text-center fs-1 w-100"
               >
                 Live<br/>Laugh<br/>Love
@@ -23,7 +23,7 @@
           <div class="card-body m-auto">
             <h5 class="card-title">To Do List</h5>
             <p class="card-text">
-              <ul class="fs-1 w-100" style="font-family: 'Ms Madi';">
+              <ul class="fs-1 w-100" style="font-family: 'Waiting for the Sunrise';">
                 <li>Cook</li>
                 <li>Clean</li>
                 <li>Shower</li>
@@ -54,7 +54,7 @@
                         :name="pattern.id"
                         @click="
                           (colors) =>
-                            addSticker(pattern.id, colors, { width: 290/(pattern.ratio || 5/3), height: 290, ratio: pattern.ratio })
+                            addSticker(pattern.id, colors, { width: 290/(pattern.ratio || 5/3), height: 290, ...(pattern.ratio && {ratio: pattern.ratio}) })
                         "
                       ></svg-sticker>
                 </div>

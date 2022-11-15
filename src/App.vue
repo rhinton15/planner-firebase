@@ -1,10 +1,14 @@
 <template>
+  <the-navigation></the-navigation>
   <router-view></router-view>
 </template>
 
 <script>
+import TheNavigation from "./components/layout/TheNavigation.vue";
+
 export default {
   name: "App",
+  components: { TheNavigation },
 };
 </script>
 
