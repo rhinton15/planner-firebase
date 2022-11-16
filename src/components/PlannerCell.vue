@@ -7,7 +7,7 @@
         (isHovering || disabled ? 'hover' : '')
       "
       :id="col + '-' + row"
-      :style="`width: ${width}px; height: ${height}px`"
+      :style="`width: ${width}px; height: ${height}px; border-top-width: ${1}px !important`"
       @click.self="showModal"
       @mouseenter="isHovering = true"
       @mouseleave="isHovering = false"
@@ -25,23 +25,24 @@
       </div>
     </div>
 
-    <add-sticker-modal
+    <!-- <add-sticker-modal
       :open="isModalOpen"
       @close="hideModal"
       @addText="addText"
       @addToDo="addToDo"
       @addSticker="addSticker"
-    ></add-sticker-modal>
+    ></add-sticker-modal> -->
   </div>
 </template>
 
 <script>
-import AddStickerModal from "./AddStickerModal.vue";
+// import AddStickerModal from "./AddStickerModal.vue";
 
 export default {
-  components: { AddStickerModal },
+  // components: { AddStickerModal },
   props: ["date", "row", "col", "disabled", "width", "height", "text"],
-  emits: ["addText", "addToDo", "addSticker"],
+  // emits: ["addText", "addToDo", "addSticker"],
+  emits: ["showModal"],
   data() {
     return {
       isModalOpen: false,
@@ -54,30 +55,31 @@ export default {
   },
   methods: {
     showModal() {
-      if (!this.disabled) {
-        this.isModalOpen = true;
-      }
+      this.$emit("showModal", { top: this.offsetTop, left: this.offsetLeft });
+      // if (!this.disabled) {
+      //   this.isModalOpen = true;
+      // }
     },
-    hideModal() {
-      this.isModalOpen = false;
-    },
-    addText() {
-      this.$emit("addText", { top: this.offsetTop, left: this.offsetLeft });
-      this.hideModal();
-    },
-    addToDo() {
-      this.$emit("addToDo", { top: this.offsetTop, left: this.offsetLeft });
-      this.hideModal();
-    },
-    addSticker(properties) {
-      this.$emit("addSticker", {
-        type: properties.type,
-        colors: properties.colors,
-        position: { top: this.offsetTop, left: this.offsetLeft },
-        dimensions: properties.dimensions,
-      });
-      this.hideModal();
-    },
+    // hideModal() {
+    //   this.isModalOpen = false;
+    // },
+    // addText() {
+    //   this.$emit("addText", { top: this.offsetTop, left: this.offsetLeft });
+    //   this.hideModal();
+    // },
+    // addToDo() {
+    //   this.$emit("addToDo", { top: this.offsetTop, left: this.offsetLeft });
+    //   this.hideModal();
+    // },
+    // addSticker(properties) {
+    //   this.$emit("addSticker", {
+    //     type: properties.type,
+    //     colors: properties.colors,
+    //     position: { top: this.offsetTop, left: this.offsetLeft },
+    //     dimensions: properties.dimensions,
+    //   });
+    //   this.hideModal();
+    // },
   },
   mounted() {
     var cell1 = document.getElementById("1-1");

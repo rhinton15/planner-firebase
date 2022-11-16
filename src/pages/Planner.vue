@@ -21,7 +21,7 @@
             <div ref="header">
               <div class="clickable" @click="editHeader">
                 <div class="d-flex justify-content-between align-items-center">
-                  <button class="btn btn-default fs-2" @click="prevWeek">
+                  <button class="btn btn-default fs-2" @click.stop="prevWeek">
                     <font-awesome-icon icon="fa-solid fa-chevron-left" />
                   </button>
                   <h1
@@ -41,11 +41,11 @@
                     }}
                     {{ parseInt(currentWeek.split("-")[0]) }}
                   </h1>
-                  <button class="btn btn-default fs-2" @click="nextWeek">
+                  <button class="btn btn-default fs-2" @click.stop="nextWeek">
                     <font-awesome-icon icon="fa-solid fa-chevron-right" />
                   </button>
                 </div>
-                <div class="d-inline-flex" v-if="level === 'week'">
+                <div class="d-flex" v-if="level === 'week'">
                   <label
                     v-for="day in 7"
                     :key="day"
@@ -68,7 +68,7 @@
                     }}</label
                   >
                 </div>
-                <div class="d-inline-flex" v-if="level === 'week'">
+                <div class="d-flex" v-if="level === 'week'">
                   <label
                     v-for="day in 7"
                     :key="day"
@@ -111,10 +111,11 @@
                 "
                 :index="day"
                 :disabled="!pageLoaded"
-                @addText="addText"
-                @addToDo="addToDo"
-                @addSticker="addSticker"
+                @showModal="showModal"
               ></planner-day>
+              <!-- @addText="addText"
+                @addToDo="addToDo"
+                @addSticker="addSticker" -->
             </div>
             <div v-else-if="level === 'month'">
               <planner-month
@@ -216,10 +217,19 @@
         style="object-fit: contain"
       />
     </base-modal>
+
+    <add-sticker-modal
+      :open="modalPosition"
+      @close="hideModal"
+      @addText="addText"
+      @addToDo="addToDo"
+      @addSticker="addSticker"
+    ></add-sticker-modal>
   </div>
 </template>
 
 <script>
+import AddStickerModal from "../components/AddStickerModal.vue";
 import CalendarSelect from "../components/CalendarSelect.vue";
 import PlannerMonth from "../components/PlannerMonth.vue";
 import PlannerDay from "../components/PlannerDay.vue";
@@ -239,6 +249,7 @@ import $ from "jquery";
 
 export default {
   components: {
+    AddStickerModal,
     PlannerMonth,
     PlannerDay,
     Sticker,
@@ -278,6 +289,7 @@ export default {
       editingHeader: false,
       showingTutorial: false,
       saveStatus: "saved",
+      modalPosition: null,
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -353,6 +365,7 @@ export default {
     },
     currentWeek: {
       handler: function (newVal, oldVal) {
+        this.editingHeader = false;
         if (this.pendingChanges) {
           this.saveChanges(oldVal);
         }
@@ -363,6 +376,14 @@ export default {
     },
   },
   methods: {
+    showModal(position) {
+      if (this.pageLoaded) {
+        this.modalPosition = position;
+      }
+    },
+    hideModal() {
+      this.modalPosition = null;
+    },
     prevWeek() {
       const currentWeekSplit = this.currentWeek.split("-");
       if (currentWeekSplit.length === 2) {
@@ -399,11 +420,11 @@ export default {
       var newWeek = new Date(year, month, 1);
       this.currentWeek = `${newWeek.getFullYear()}-${newWeek.getMonth() + 1}`;
     },
-    addText(position) {
+    addText() {
       let newLength = this.texts.push({
         text: "",
         properties: {
-          position: position,
+          position: this.modalPosition,
           opacity: 1,
           dimensions: {
             width: 174,
@@ -433,12 +454,13 @@ export default {
         // $("#text-" + (this.texts.length - 1)).focus();
         // $("#text-" + (this.texts.length - 1)).click();
       });
+      this.hideModal();
     },
-    addToDo(position) {
+    addToDo() {
       this.todos.push({
         properties: {
           text: "To Do 1\nTo Do 2\nTo Do 3",
-          position: position,
+          position: this.modalPosition,
           opacity: 1,
           dimensions: {
             width: 174,
@@ -460,6 +482,7 @@ export default {
           },
         },
       });
+      this.hideModal();
     },
     addSticker(sticker) {
       this.stickers.push({
@@ -467,6 +490,7 @@ export default {
         properties: {
           // position: sticker.position,
           // colors: sticker.colors,
+          position: this.modalPosition,
           opacity: 1,
           scale: 0,
           rotation: 0,
@@ -480,6 +504,7 @@ export default {
           ...sticker,
         },
       });
+      this.hideModal();
     },
     moveToFront(index) {
       let sticker = this.stickers.splice(index, 1);
@@ -587,7 +612,7 @@ export default {
             doc(db, "users", auth.currentUser.uid, "planner", week),
             {
               header: this.headerSettings,
-              text: this.texts,
+              text: this.texts.filter((item) => item.text !== ""),
               todo: this.todos,
               stickers: this.stickers,
             }

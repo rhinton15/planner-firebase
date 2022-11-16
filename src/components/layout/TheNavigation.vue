@@ -16,6 +16,11 @@
           >Planner</router-link
         >
       </li>
+      <li class="nav-item px-2" v-if="isAuth">
+        <router-link class="nav-link underline" to="/contactus"
+          >Contact Us</router-link
+        >
+      </li>
       <li class="nav-item px-2" v-if="isAdmin">
         <router-link class="nav-link underline" to="/admin/managePatterns"
           >Admin</router-link

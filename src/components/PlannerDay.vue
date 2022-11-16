@@ -9,10 +9,11 @@
       :disabled="disabled"
       :width="174"
       :height="290"
-      @addText="addText"
-      @addToDo="addToDo"
-      @addSticker="addSticker"
+      @showModal="showModal"
     ></planner-cell>
+    <!-- @addText="addText"
+      @addToDo="addToDo"
+      @addSticker="addSticker" -->
   </div>
 </template>
 
@@ -22,16 +23,20 @@ import PlannerCell from "./PlannerCell.vue";
 export default {
   components: { PlannerCell },
   props: ["date", "index", "disabled"],
-  emits: ["addText", "addToDo", "addSticker"],
+  // emits: ["addText", "addToDo", "addSticker"],
+  emits: ["showModal"],
   methods: {
-    addText(position) {
-      this.$emit("addText", position);
-    },
-    addToDo(position) {
-      this.$emit("addToDo", position);
-    },
-    addSticker(position) {
-      this.$emit("addSticker", position);
+    // addText(position) {
+    //   this.$emit("addText", position);
+    // },
+    // addToDo(position) {
+    //   this.$emit("addToDo", position);
+    // },
+    // addSticker(position) {
+    //   this.$emit("addSticker", position);
+    // },
+    showModal(position) {
+      this.$emit("showModal", position);
     },
   },
 };
