@@ -731,7 +731,7 @@ export default {
       startShift = this.modelValue.position;
     });
     sticker.on("mousedown touchstart", (e) => {
-      if (!resizing) {
+      if (!resizing && this.isFocused) {
         moving = true;
         startPos = {
           x: e.clientX,
@@ -761,7 +761,11 @@ export default {
       moving = false;
       resizing = false;
     });
-    $(document).on("mousemove touchmove", (e) => {
+    sticker.on("mousemove touchmove", (e) => {
+      if (this.isFocused) {
+        e.stopPropagation();
+      }
+
       var ePos = { x: e.clientX, y: e.clientY };
       if (
         e.type == "touchstart" ||

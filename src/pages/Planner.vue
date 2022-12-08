@@ -16,189 +16,209 @@
           </button>
           <calendar-select v-model="currentWeek"></calendar-select>
         </div>
-        <div class="d-flex flex-column" ref="planner">
-          <div>
-            <div ref="header">
-              <div class="clickable" @click="editHeader">
-                <div class="d-flex justify-content-between align-items-center">
-                  <button class="btn btn-default fs-2" @click.stop="prevWeek">
-                    <font-awesome-icon icon="fa-solid fa-chevron-left" />
-                  </button>
-                  <h1
-                    :style="`
+        <div class="pinch-zoom-container" style="width: 1218px; height: 800px">
+          <div class="d-flex flex-column pinch-zoom" ref="planner">
+            <div>
+              <div ref="header">
+                <div class="clickable" @click="editHeader">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <button class="btn btn-default fs-2" @click.stop="prevWeek">
+                      <font-awesome-icon icon="fa-solid fa-chevron-left" />
+                    </button>
+                    <h1
+                      :style="`
                 font-family: '${headerSettings.month.family}';
                 font-weight: ${headerSettings.month.bold ? 700 : 400};
                 font-size: ${headerSettings.month.size}px !important;
                 color: ${headerSettings.month.color};`"
-                  >
-                    {{
-                      new Date(
-                        parseInt(currentWeek.split("-")[0]),
-                        parseInt(currentWeek.split("-")[1]) - 1
-                      ).toLocaleString("default", {
-                        month: "long",
-                      })
-                    }}
-                    {{ parseInt(currentWeek.split("-")[0]) }}
-                  </h1>
-                  <button class="btn btn-default fs-2" @click.stop="nextWeek">
-                    <font-awesome-icon icon="fa-solid fa-chevron-right" />
-                  </button>
-                </div>
-                <div class="d-flex" v-if="level === 'week'">
-                  <label
-                    v-for="day in 7"
-                    :key="day"
-                    :style="`
+                    >
+                      {{
+                        new Date(
+                          parseInt(currentWeek.split("-")[0]),
+                          parseInt(currentWeek.split("-")[1]) - 1
+                        ).toLocaleString("default", {
+                          month: "long",
+                        })
+                      }}
+                      {{ parseInt(currentWeek.split("-")[0]) }}
+                    </h1>
+                    <button class="btn btn-default fs-2" @click.stop="nextWeek">
+                      <font-awesome-icon icon="fa-solid fa-chevron-right" />
+                    </button>
+                  </div>
+                  <div class="d-flex" v-if="level === 'week'">
+                    <label
+                      v-for="day in 7"
+                      :key="day"
+                      :style="`
                 font-family: '${headerSettings.day.family}', cursive;
                 font-weight: ${headerSettings.day.bold ? 700 : 400};
                 font-size: ${headerSettings.day.size * 0.7}px !important;
                 color: ${headerSettings.day.color};
                 width: 174px;
               `"
-                    class="text-center fs-1"
-                    >{{
-                      new Date(
-                        parseInt(currentWeek.split("-")[0]),
-                        parseInt(currentWeek.split("-")[1]) - 1,
-                        day + parseInt(currentWeek.split("-")[2]) - 1
-                      ).toLocaleString("default", {
-                        weekday: "long",
-                      })
-                    }}</label
-                  >
-                </div>
-                <div class="d-flex" v-if="level === 'week'">
-                  <label
-                    v-for="day in 7"
-                    :key="day"
-                    :style="`
+                      class="text-center fs-1"
+                      >{{
+                        new Date(
+                          parseInt(currentWeek.split("-")[0]),
+                          parseInt(currentWeek.split("-")[1]) - 1,
+                          day + parseInt(currentWeek.split("-")[2]) - 1
+                        ).toLocaleString("default", {
+                          weekday: "long",
+                        })
+                      }}</label
+                    >
+                  </div>
+                  <div class="d-flex" v-if="level === 'week'">
+                    <label
+                      v-for="day in 7"
+                      :key="day"
+                      :style="`
                 font-family: '${headerSettings.day.family}', cursive;
                 font-weight: ${headerSettings.day.bold ? 700 : 400};
                 font-size: ${headerSettings.day.size}px !important;
                 color: ${headerSettings.day.color};
                 width: 174px;
               `"
-                    class="text-center fs-1"
-                    >{{
-                      new Date(
-                        parseInt(currentWeek.split("-")[0]),
-                        parseInt(currentWeek.split("-")[1]) - 1,
-                        day + parseInt(currentWeek.split("-")[2]) - 1
-                      ).getDate()
-                    }}</label
-                  >
+                      class="text-center fs-1"
+                      >{{
+                        new Date(
+                          parseInt(currentWeek.split("-")[0]),
+                          parseInt(currentWeek.split("-")[1]) - 1,
+                          day + parseInt(currentWeek.split("-")[2]) - 1
+                        ).getDate()
+                      }}</label
+                    >
+                  </div>
                 </div>
+                <planner-header-settings
+                  v-if="editingHeader"
+                  v-model="headerSettings"
+                ></planner-header-settings>
               </div>
-              <planner-header-settings
-                v-if="editingHeader"
-                v-model="headerSettings"
-              ></planner-header-settings>
             </div>
-          </div>
-          <div ref>
-            <div class="d-inline-flex" v-if="level === 'week'">
-              <!-- https://v2.vuejs.org/v2/guide/list.html#v-for-with-a-Range -->
-              <planner-day
-                v-for="day in 7"
-                :key="day"
-                :date="
-                  new Date(
-                    parseInt(currentWeek.split('-')[0]),
-                    parseInt(currentWeek.split('-')[1]) - 1,
-                    day + parseInt(currentWeek.split('-')[2]) - 1
-                  ).getDate()
-                "
-                :index="day"
-                :disabled="!pageLoaded"
-                @showModal="showModal"
-              ></planner-day>
-              <!-- @addText="addText"
+            <div ref>
+              <div class="d-inline-flex" v-if="level === 'week'">
+                <!-- https://v2.vuejs.org/v2/guide/list.html#v-for-with-a-Range -->
+                <planner-day
+                  v-for="day in 7"
+                  :key="day"
+                  :date="
+                    new Date(
+                      parseInt(currentWeek.split('-')[0]),
+                      parseInt(currentWeek.split('-')[1]) - 1,
+                      day + parseInt(currentWeek.split('-')[2]) - 1
+                    ).getDate()
+                  "
+                  :index="day"
+                  :disabled="!pageLoaded"
+                  @showModal="showModal"
+                ></planner-day>
+                <!-- @addText="addText"
                 @addToDo="addToDo"
                 @addSticker="addSticker" -->
-            </div>
-            <div v-else-if="level === 'month'">
-              <planner-month
-                :year="parseInt(currentWeek.split('-')[0])"
-                :month="parseInt(currentWeek.split('-')[1])"
-                :disabled="!pageLoaded"
-                :width="174"
-                :height="cellHeight"
-                @addText="addText"
-                @addToDo="addToDo"
-                @addSticker="addSticker"
-              ></planner-month>
-            </div>
+              </div>
+              <div v-else-if="level === 'month'">
+                <planner-month
+                  :year="parseInt(currentWeek.split('-')[0])"
+                  :month="parseInt(currentWeek.split('-')[1])"
+                  :disabled="!pageLoaded"
+                  :width="174"
+                  :height="cellHeight"
+                  @addText="addText"
+                  @addToDo="addToDo"
+                  @addSticker="addSticker"
+                ></planner-month>
+              </div>
 
-            <!-- https://vuejs.org/guide/essentials/list.html#v-for -->
-            <sticker
-              :ref="'sticker-' + index"
-              :id="index"
-              v-for="(sticker, index) in stickers"
-              :key="sticker"
-              v-model="sticker.properties"
-              :snapHeight="cellHeight"
-              @delete="deleteSticker"
-              @moveToFront="moveToFront"
-              @moveUp="moveUp"
-              @moveDown="moveDown"
-              @moveToBack="moveToBack"
-              @duplicate="(index) => duplicate('sticker', stickers, index)"
-            >
-              <svg-sticker
-                :scale="sticker.properties.scale"
-                :colors="sticker.properties.colors"
-                :name="sticker.type"
-              ></svg-sticker>
-            </sticker>
-            <sticker
-              :id="index"
-              v-for="(text, index) in texts"
-              :key="text"
-              :snapHeight="cellHeight"
-              v-model="text.properties"
-              @delete="deleteText"
-              @update:modelValue="auto_grow($refs[`text-${index}`][0], text)"
-            >
-              <template #text>
-                <textarea
-                  :ref="'text-' + index"
-                  :style="{
-                    color: text.properties.font.color,
-                    fontFamily: text.properties.font.family,
-                    fontWeight: 400,
-                    fontSize: text.properties.font.size + 'px !important',
-                    resize: 'none',
-                    width:
-                      text.properties.dimensions.width -
-                      2 *
-                        (text.properties.border.width +
-                          text.properties.border.inset) *
-                        text.properties.border.on +
-                      'px',
-                    height: '100%',
-                  }"
-                  :colors="text.properties.colors"
-                  :class="`text-${
-                    text.properties.align
-                  } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-                    text.properties.font.bold ? 'fw-bold' : ''
-                  }`"
-                  v-model="text.text"
-                  @input="auto_grow($event.target, text)"
-                ></textarea>
-              </template>
-            </sticker>
-            <sticker
-              :id="index"
-              v-for="(text, index) in todos"
-              :key="text"
-              :snapHeight="cellHeight"
-              v-model="text.properties"
-              @delete="deleteToDo"
-            >
-              <to-do-list v-model="text.properties"></to-do-list>
-            </sticker>
+              <!-- https://vuejs.org/guide/essentials/list.html#v-for -->
+              <sticker
+                :ref="'sticker-' + index"
+                :id="index"
+                v-for="(sticker, index) in stickers"
+                :key="sticker"
+                v-model="sticker.properties"
+                :snapHeight="cellHeight"
+                @delete="deleteSticker"
+                @moveToFront="moveToFront"
+                @moveUp="moveUp"
+                @moveDown="moveDown"
+                @moveToBack="moveToBack"
+                @duplicate="(index) => duplicate('sticker', stickers, index)"
+              >
+                <div
+                  v-if="sticker.properties.icon"
+                  v-html="sticker.properties.icon"
+                  :style="`
+                  font-size: ${sticker.properties.dimensions.height}px;
+                  line-height: ${sticker.properties.dimensions.height}px;
+                  font-family: 'Noto Color Emoji';
+                `"
+                  class="position-absolute"
+                ></div>
+                <!-- top: 560px;
+                  z-index: 2000;
+                  left: 220px; -->
+                <svg-sticker
+                  v-else
+                  :scale="sticker.properties.scale"
+                  :colors="sticker.properties.colors"
+                  :name="sticker.properties.type"
+                ></svg-sticker>
+              </sticker>
+              <sticker
+                :id="index"
+                v-for="(text, index) in texts"
+                :key="text"
+                :snapHeight="cellHeight"
+                v-model="text.properties"
+                @delete="deleteText"
+                @update:modelValue="auto_grow($refs[`text-${index}`][0], text)"
+              >
+                <template #text>
+                  <textarea
+                    :ref="'text-' + index"
+                    :style="{
+                      color: text.properties.font.color,
+                      fontFamily: text.properties.font.family,
+                      fontWeight: 400,
+                      fontSize: text.properties.font.size + 'px !important',
+                      resize: 'none',
+                      width:
+                        text.properties.dimensions.width -
+                        2 *
+                          (text.properties.border.width +
+                            text.properties.border.inset) *
+                          text.properties.border.on +
+                        'px',
+                      height: '100%',
+                    }"
+                    :colors="text.properties.colors"
+                    :class="`text-${
+                      text.properties.align
+                    } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
+                      text.properties.font.bold ? 'fw-bold' : ''
+                    }`"
+                    v-model="text.text"
+                    @input="auto_grow($event.target, text)"
+                  ></textarea>
+                </template>
+              </sticker>
+              <sticker
+                :id="index"
+                v-for="(text, index) in todos"
+                :key="text"
+                :snapHeight="cellHeight"
+                v-model="text.properties"
+                @delete="deleteToDo"
+              >
+                <template #text>
+                  <to-do-list v-model="text.properties"></to-do-list>
+                </template>
+              </sticker>
+            </div>
           </div>
         </div>
       </div>
@@ -239,6 +259,7 @@ import ToDoList from "../components/ToDoList.vue";
 import PlannerHeaderSettings from "../components/PlannerHeaderSettings.vue";
 
 import html2canvas from "html2canvas";
+import PinchZoom from "pinch-zoom-js";
 
 // import { auth, db, functions } from "../firebase";
 import { auth, db } from "../firebase";
@@ -318,6 +339,22 @@ export default {
     // await addAdmin({ email: "test@example.com" });
   },
   async mounted() {
+    const el = document.querySelector("div.pinch-zoom");
+    el.addEventListener("touchmove", function () {
+      console.log("touch move before");
+    });
+    new PinchZoom(el, {
+      tapZoomFactor: 4,
+
+      onDoubleTap: (pinch, event) => {
+        event.preventDefault();
+        console.log(pinch, event);
+      },
+    });
+    el.addEventListener("touchmove", function () {
+      console.log("touch move after");
+    });
+
     this.timer = setInterval(() => {
       if (this.pendingChanges) {
         this.saveChanges(this.currentWeek);
@@ -459,7 +496,12 @@ export default {
     addToDo() {
       this.todos.push({
         properties: {
-          text: "To Do 1\nTo Do 2\nTo Do 3",
+          // text: "To Do 1\nTo Do 2\nTo Do 3",
+          items: [
+            { text: "To Do 1", done: false },
+            { text: "To Do 2", done: false },
+            { text: "To Do 3", done: false },
+          ],
           position: this.modalPosition,
           opacity: 1,
           dimensions: {
@@ -486,7 +528,7 @@ export default {
     },
     addSticker(sticker) {
       this.stickers.push({
-        type: sticker.type,
+        // type: sticker.type,
         properties: {
           // position: sticker.position,
           // colors: sticker.colors,

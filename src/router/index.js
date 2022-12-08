@@ -37,6 +37,11 @@ const router = createRouter({
       meta: { requiresAdmin: true },
     },
     {
+      path: "/admin/manageEmojis",
+      component: () => import("../pages/Admin/ManageEmojis.vue"),
+      meta: { requiresAdmin: true },
+    },
+    {
       path: "/admin/feedback",
       component: () => import("../pages/Admin/Feedback.vue"),
       meta: { requiresAdmin: true },

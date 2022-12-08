@@ -38,6 +38,8 @@ import {
   faExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
+import { faCircleCheck, faCircle } from "@fortawesome/free-regular-svg-icons";
+
 /* add icons to the library */
 library.add(
   faUpDownLeftRight,
@@ -58,7 +60,9 @@ library.add(
   faFloppyDisk,
   faSpinner,
   faCheck,
-  faExclamation
+  faExclamation,
+  faCircleCheck,
+  faCircle
 );
 
 // don't load app until firebase is initialized
