@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="font-size: 12px">
     <div class="d-flex justify-content-between align-items-center">
       <button class="btn btn-default" @click="prevMonth">
         <font-awesome-icon icon="fa-solid fa-chevron-left" />
@@ -182,7 +182,7 @@ tr.week.selected {
 }
 
 .day {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="settings d-flex" style="z-index: 1000">
+  <div class="settings d-flex overflow-auto" style="z-index: 1000">
     <div class="d-flex flex-column border-end border-secondary my-2 px-2">
       <label
         class="form-label text-nowrap m-0 border-bottom border-secondary px-2"

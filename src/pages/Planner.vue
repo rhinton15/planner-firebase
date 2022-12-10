@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="m-auto position-relative" ref="page">
-      <div class="d-inline-flex">
-        <div class="d-flex flex-column">
+      <div class="d-flex px-2" style="height: calc(100vh - 200px)">
+        <div class="d-none d-md-flex flex-column">
           <button class="btn btn-outline-primary" @click="toggleTutorial">
             Help
           </button>
@@ -16,8 +16,12 @@
           </button>
           <calendar-select v-model="currentWeek"></calendar-select>
         </div>
-        <div class="pinch-zoom-container" style="width: 1218px; height: 800px">
-          <div class="d-flex flex-column pinch-zoom" ref="planner">
+        <div class="pinch-zoom-container flex-fill">
+          <div
+            class="d-flex flex-column pinch-zoom px-5"
+            ref="planner"
+            id="pinch-zoom"
+          >
             <div>
               <div ref="header">
                 <div class="clickable" @click="editHeader">
@@ -245,6 +249,12 @@
       @addToDo="addToDo"
       @addSticker="addSticker"
     ></add-sticker-modal>
+
+    <sticker-properties
+      v-if="stickers?.length > 0"
+      :id="0"
+      v-model="stickers[0].properties"
+    ></sticker-properties>
   </div>
 </template>
 
@@ -257,6 +267,7 @@ import Sticker from "../components/Sticker.vue";
 import SvgSticker from "../components/SvgSticker.vue";
 import ToDoList from "../components/ToDoList.vue";
 import PlannerHeaderSettings from "../components/PlannerHeaderSettings.vue";
+import StickerProperties from "../components/StickerProperties.vue";
 
 import html2canvas from "html2canvas";
 import PinchZoom from "pinch-zoom-js";
@@ -278,6 +289,7 @@ export default {
     CalendarSelect,
     ToDoList,
     PlannerHeaderSettings,
+    StickerProperties,
   },
   data() {
     return {
@@ -340,9 +352,6 @@ export default {
   },
   async mounted() {
     const el = document.querySelector("div.pinch-zoom");
-    el.addEventListener("touchmove", function () {
-      console.log("touch move before");
-    });
     new PinchZoom(el, {
       tapZoomFactor: 4,
 
@@ -350,9 +359,6 @@ export default {
         event.preventDefault();
         console.log(pinch, event);
       },
-    });
-    el.addEventListener("touchmove", function () {
-      console.log("touch move after");
     });
 
     this.timer = setInterval(() => {
@@ -616,6 +622,8 @@ export default {
 
         this.pageLoaded = true;
 
+        console.log(res);
+
         this.texts = res?.text || [];
         this.todos = res?.todo || [];
         this.stickers = res?.stickers || [];
@@ -638,6 +646,7 @@ export default {
           // sticker.properties.scale = sticker.properties.scale || 1;
           sticker.properties.rotation = sticker.properties.rotation || 0;
           sticker.properties.align = sticker.properties.align || "center";
+          delete sticker.properties.align;
           // delete sticker.rotation;
         }); // assign default value
 

@@ -1,38 +1,75 @@
 <template>
   <nav
-    class="navbar navbar-dark bgdark fixed-top"
+    class="navbar navbar-expand-md navbar-dark fixed-top"
     style="background-color: #a9a9a9"
   >
-    <!-- style="background-color: #4078b5 !important" -->
-    <ul class="nav d-flex w-100 align-items-center">
-      <li class="nav-item px-2 me-auto text-white" style="font-size: 24px">
-        Calendar Website
-      </li>
-      <li class="nav-item px-2">
-        <router-link class="nav-link underline" to="/">Home</router-link>
-      </li>
-      <li class="nav-item px-2" v-if="isAuth">
-        <router-link class="nav-link underline" to="/planner"
-          >Planner</router-link
-        >
-      </li>
-      <li class="nav-item px-2" v-if="isAuth">
-        <router-link class="nav-link underline" to="/contactus"
-          >Contact Us</router-link
-        >
-      </li>
-      <li class="nav-item px-2" v-if="isAdmin">
-        <router-link class="nav-link underline" to="/admin/managePatterns"
-          >Admin</router-link
-        >
-      </li>
-      <li class="nav-item px-2" v-if="isAuth">
-        <button class="nav-link underline" @click="logout">Logout</button>
-      </li>
-      <li class="nav-item px-2" v-else>
-        <router-link class="nav-link underline" to="/login">Login</router-link>
-      </li>
-    </ul>
+    <div class="container-fluid">
+      <router-link class="navbar-brand" to="/">Calendar Website</router-link>
+      <button
+        class="navbar-toggler border-0 shadow-none"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasNavbar"
+        aria-controls="offcanvasNavbar"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div
+        class="offcanvas offcanvas-end"
+        style="background-color: #a9a9a9"
+        tabindex="-1"
+        id="offcanvasNavbar"
+        aria-labelledby="offcanvasNavbarLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title text-white" id="offcanvasNavbarLabel">
+            Calendar Website
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item px-2 my-1">
+              <router-link class="nav-link underline p-0" to="/"
+                >Home</router-link
+              >
+            </li>
+            <li class="nav-item px-2 my-1" v-if="isAuth">
+              <router-link class="nav-link underline p-0" to="/planner"
+                >Planner</router-link
+              >
+            </li>
+            <li class="nav-item px-2 my-1" v-if="isAuth">
+              <router-link class="nav-link underline p-0" to="/contactus"
+                >Contact Us</router-link
+              >
+            </li>
+            <li class="nav-item px-2 my-1" v-if="isAdmin">
+              <router-link
+                class="nav-link underline p-0"
+                to="/admin/managePatterns"
+                >Admin</router-link
+              >
+            </li>
+            <li class="nav-item px-2 my-1" v-if="isAuth">
+              <button class="nav-link underline p-0" @click="logout">
+                Logout
+              </button>
+            </li>
+            <li class="nav-item px-2 my-1" v-else>
+              <router-link class="nav-link underline p-0" to="/login"
+                >Login</router-link
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </nav>
 </template>
 

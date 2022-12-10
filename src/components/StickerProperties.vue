@@ -1,130 +1,329 @@
 <template>
-  <div class="settings d-flex" v-if="isFocused" style="z-index: 1000">
-    <div class="d-flex flex-column border-end border-secondary my-2 px-2">
-      <label
-        class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-        >Actions</label
-      >
-      <button
-        class="btn btn-outline-secondary"
+  <div
+    class="settings d-flex overflow-auto"
+    v-if="id != null"
+    style="z-index: 1000; font-size: 14px"
+    ref="settings"
+  >
+    <sticker-property-group title="Actions">
+      <sticker-property-button
         title="duplicate"
+        icon="fa-solid fa-copy"
         @click="duplicate"
+      ></sticker-property-button>
+    </sticker-property-group>
+    <sticker-property-group title="Fill">
+      <sticker-property
+        v-for="index in colors.length"
+        :key="index"
+        :title="`Color ${index}`"
       >
-        <font-awesome-icon icon="fa-solid fa-copy" />
-      </button>
-    </div>
-    <div
-      class="d-flex flex-column border-end border-secondary my-2 px-2"
-      v-if="modelValue.colors != null"
-    >
-      <label
-        class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-        >Fill</label
-      >
-      <div class="d-flex">
-        <div v-for="index in colors.length" :key="index" class="p-2">
-          <label class="form-label text-nowrap">Color {{ index }}</label>
+        <input
+          type="color"
+          :id="'color' + index"
+          class="form-control form-control-color m-auto"
+          :name="'color' + index"
+          v-model="colors[index - 1]"
+          @change="updateModelValue({ colors: colors })"
+        />
+      </sticker-property>
+      <sticker-property title="Opacity">
+        <input
+          type="number"
+          step=".01"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.opacity"
+          @change="
+            updateModelValue({
+              opacity: Math.max(Math.min($event.target.value, 1), 0),
+            })
+          "
+        />
+      </sticker-property>
+    </sticker-property-group>
+    <sticker-property-group title="Font" v-if="modelValue.font != null">
+      <sticker-property title="Color">
+        <input
+          type="color"
+          class="form-control form-control-color m-auto"
+          :value="modelValue.font.color"
+          @input="
+            updateModelValue({
+              font: { ...modelValue.font, color: $event.target.value },
+            })
+          "
+        />
+      </sticker-property>
+      <sticker-property title="Font">
+        <select
+          class="form-select w-auto"
+          :value="modelValue.font.family"
+          @input="
+            updateModelValue({
+              font: { ...modelValue.font, family: $event.target.value },
+            })
+          "
+        >
+          <option v-for="font in fonts.sort()" :key="font" :value="font">
+            {{ font }}
+          </option>
+        </select>
+      </sticker-property>
+      <sticker-property title="Size">
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.font.size"
+          @input="
+            updateModelValue({
+              font: { ...modelValue.font, size: $event.target.value },
+            })
+          "
+        />
+      </sticker-property>
+      <sticker-property title="Bold">
+        <sticker-property-button
+          title="bold"
+          icon="fa-solid fa-bold"
+          :class="`d-block ${modelValue.font.bold ? 'active' : ''}`"
+          @click="
+            updateModelValue({
+              font: { ...modelValue.font, bold: !modelValue.font.bold },
+            })
+          "
+        ></sticker-property-button>
+      </sticker-property>
+    </sticker-property-group>
+    <sticker-property-group title="Border" v-if="modelValue.border">
+      <sticker-property title="On/Off">
+        <div class="form-check form-switch">
           <input
-            type="color"
-            :id="'color' + index"
-            class="form-control form-control-color m-auto"
-            :name="'color' + index"
-            v-model="colors[index - 1]"
-            @change="updateModelValue({ colors: colors })"
-          />
-        </div>
-        <div class="p-2">
-          <label class="form-label text-nowrap">Opacity</label>
-          <!-- https://stackoverflow.com/questions/47311936/v-model-and-child-components -->
-          <input
-            type="number"
-            step=".01"
-            class="form-control form-control-small m-auto text-center"
-            :value="modelValue.opacity"
-            @change="
-              updateModelValue({
-                opacity: Math.max(Math.min($event.target.value, 1), 0),
-              })
-            "
-          />
-        </div>
-      </div>
-    </div>
-    <div
-      class="d-flex flex-column border-end border-secondary my-2 px-2"
-      v-if="modelValue.font != null"
-    >
-      <label
-        class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-        >Font</label
-      >
-      <div class="d-flex">
-        <div class="p-2">
-          <label class="form-label text-nowrap">Color</label>
-          <input
-            type="color"
-            class="form-control form-control-color m-auto"
-            :value="modelValue.font.color"
-            @input="
-              updateModelValue({
-                font: { ...modelValue.font, color: $event.target.value },
-              })
-            "
-          />
-        </div>
-        <div class="p-2">
-          <label class="form-label text-nowrap">Font</label>
-          <select
-            class="form-select w-auto"
-            :value="modelValue.font.family"
-            @input="
-              updateModelValue({
-                font: { ...modelValue.font, family: $event.target.value },
-              })
-            "
-          >
-            <option v-for="font in fonts.sort()" :key="font" :value="font">
-              {{ font }}
-            </option>
-          </select>
-        </div>
-        <div class="p-2">
-          <label class="form-label text-nowrap">Size</label>
-          <input
-            type="number"
-            class="form-control form-control-small m-auto text-center"
-            :value="modelValue.font.size"
-            @input="
-              updateModelValue({
-                font: { ...modelValue.font, size: $event.target.value },
-              })
-            "
-          />
-        </div>
-        <div class="p-2">
-          <label class="form-label text-nowrap">Bold</label>
-          <button
-            :class="`btn btn-outline-secondary d-block ${
-              modelValue.font.bold ? 'active' : ''
-            }`"
+            class="form-check-input"
+            type="checkbox"
+            :checked="modelValue.border.on"
             @click="
               updateModelValue({
-                font: { ...modelValue.font, bold: !modelValue.font.bold },
+                border: { ...modelValue.border, on: !modelValue.border.on },
               })
             "
+          />
+        </div>
+      </sticker-property>
+      <sticker-property title="Color" v-if="modelValue.border.on">
+        <input
+          type="color"
+          class="form-control form-control-color m-auto"
+          :value="modelValue.border.color"
+          @input="
+            updateModelValue({
+              border: { ...modelValue.border, color: $event.target.value },
+            })
+          "
+        />
+      </sticker-property>
+      <sticker-property title="Style" v-if="modelValue.border.on">
+        <select
+          class="form-select w-auto"
+          :value="modelValue.border.style"
+          @input="
+            updateModelValue({
+              border: { ...modelValue.border, style: $event.target.value },
+            })
+          "
+        >
+          <option
+            v-for="style in borderStyles"
+            :key="style"
+            :value="style.toLowerCase()"
           >
-            <font-awesome-icon icon="fa-solid fa-bold" />
-          </button>
+            {{ style }}
+          </option>
+        </select>
+      </sticker-property>
+      <sticker-property title="Width" v-if="modelValue.border.on">
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.border.width"
+          @input="
+            updateModelValue({
+              border: {
+                ...modelValue.border,
+                width: parseFloat($event.target.value),
+              },
+            })
+          "
+        />
+      </sticker-property>
+      <sticker-property title="Inset" v-if="modelValue.border.on">
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.border.inset"
+          @input="
+            updateModelValue({
+              border: {
+                ...modelValue.border,
+                inset: parseFloat($event.target.value),
+              },
+            })
+          "
+        />
+      </sticker-property>
+    </sticker-property-group>
+    <sticker-property-group
+      title="Dimensions"
+      v-if="modelValue.dimensions != null"
+    >
+      <sticker-property
+        title="Width"
+        v-if="modelValue.dimensions.width != null"
+      >
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.dimensions.width"
+          @input="
+            updateModelValue({
+              dimensions: {
+                ...modelValue.dimensions,
+                width: parseFloat($event.target.value),
+              },
+            })
+          "
+        />
+      </sticker-property>
+      <sticker-property
+        title="Height"
+        v-if="modelValue.dimensions.height != null"
+      >
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.dimensions.height"
+          @input="
+            updateModelValue({
+              dimensions: {
+                ...modelValue.dimensions,
+                height: parseFloat($event.target.value),
+              },
+            })
+          "
+        />
+      </sticker-property>
+    </sticker-property-group>
+    <sticker-property-group title="Scale" v-if="modelValue.scale != null">
+      <div class="p-2 border-end" v-if="modelValue.dimensions.width != null">
+        <input
+          type="range"
+          class="form-range"
+          min="-2"
+          max="2"
+          step="1"
+          :value="modelValue.scale"
+          @input="
+            updateModelValue({
+              scale: parseFloat($event.target.value),
+            })
+          "
+        />
+        <div class="d-block m-auto text-nowrap">
+          <input
+            type="number"
+            class="form-control form-control-small text-center d-inline-block"
+            :value="2 ** modelValue.scale * 100"
+            @change="
+              updateModelValue({
+                scale: Math.log2(parseFloat($event.target.value) / 100),
+              })
+            "
+          />
+          <label class="px-2">%</label>
         </div>
       </div>
-    </div>
+    </sticker-property-group>
+    <sticker-property-group title="Rotate" v-if="modelValue.rotation != null">
+      <sticker-property title="Degrees">
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.rotation"
+          @input="
+            updateModelValue({
+              rotation: parseFloat($event.target.value),
+            })
+          "
+        />
+      </sticker-property>
+    </sticker-property-group>
+    <sticker-property-group title="Order">
+      <sticker-property-button
+        title="move to front"
+        icon="fa-solid fa-angles-up"
+        @click="moveToFront"
+      ></sticker-property-button>
+      <sticker-property-button
+        title="move up"
+        icon="fa-solid fa-angle-up"
+        @click="moveUp"
+      ></sticker-property-button>
+      <sticker-property-button
+        title="move down"
+        icon="fa-solid fa-angle-down"
+        @click="moveDown"
+      ></sticker-property-button>
+      <sticker-property-button
+        title="move to back"
+        icon="fa-solid fa-angles-down"
+        @click="moveToBack"
+      ></sticker-property-button>
+    </sticker-property-group>
+    <sticker-property-group title="Align" v-if="modelValue.align != null">
+      <sticker-property>
+        <sticker-property-button
+          title="align left"
+          icon="fa-solid fa-align-left"
+          @click="
+            updateModelValue({
+              align: 'start',
+            })
+          "
+        ></sticker-property-button>
+      </sticker-property>
+      <sticker-property>
+        <sticker-property-button
+          title="align center"
+          icon="fa-solid fa-align-center"
+          @click="
+            updateModelValue({
+              align: 'center',
+            })
+          "
+        ></sticker-property-button>
+      </sticker-property>
+      <sticker-property>
+        <sticker-property-button
+          title="align right"
+          icon="fa-solid fa-align-right"
+          @click="
+            updateModelValue({
+              align: 'end',
+            })
+          "
+        ></sticker-property-button>
+      </sticker-property>
+    </sticker-property-group>
   </div>
 </template>
 
 <script>
 import $ from "jquery";
+import StickerProperty from "./StickerProperty.vue";
+import StickerPropertyButton from "./StickerPropertyButton.vue";
+import StickerPropertyGroup from "./StickerPropertyGroup.vue";
 
 export default {
+  components: { StickerProperty, StickerPropertyButton, StickerPropertyGroup },
   props: ["id", "modelValue"],
   emits: [
     "update:modelValue",
@@ -137,65 +336,43 @@ export default {
   ],
   data() {
     return {
-      visible: true,
-      rotation: 0,
-      offsetTop: 0,
-      offsetLeft: 0,
-      isFocused: false,
-      color: "#00ff00",
       colors: [],
-      fontSize: null,
       fonts: [
         "Amatic SC",
-        "Cookie",
-        "Homemade Apple",
+        "Atma",
+        "Barrio",
+        "Birthstone Bounce",
+        "Bonbon",
+        "Butterfly Kids",
+        "Codystar",
+        "Fredericka the Great",
+        "Hachi Maru Pop",
+        "Just Another Hand",
+        "Londrina Outline",
+        "Luckiest Guy",
         "Ms Madi",
-        "Rouge Script",
+        "Nanum Pen Script",
+        "Oooh Baby",
+        "Permanent Marker",
+        "Ribeye Marrow",
+        "Rochester",
+        "Rock Salt",
         "Sacramento",
-        "Shadows Into Light",
+        "Send Flowers",
         "Shadows Into Light Two",
-        "Sue Ellen Francisco",
-        "Tillana",
+        "Special Elite",
+        "Unkempt",
+        "Waiting for the Sunrise",
       ],
       borderStyles: ["Solid", "Dotted", "Dashed", "Double"],
     };
   },
-  computed: {
-    trueRotation() {
-      return ((this.modelValue.rotation % 360) + 360) % 360;
-    },
-    rotationRadians() {
-      return (this.modelValue.rotation / 180) * Math.PI;
-    },
-    ratio() {
-      let h = this.modelValue.dimensions.height;
-      let w = this.modelValue.dimensions.width;
-      let H = this.boundingBox.dimensions.height;
-      let W = this.boundingBox.dimensions.width;
-      let x = W - ((h / w) * (H - (h / w) * W)) / (1 - (h / w) ** 2);
-      let y = (H - (h / w) * W) / (1 - (h / w) ** 2);
-      return x / y;
-    },
-    boundingBox() {
-      return this.calculateBoundingBox(this.modelValue.dimensions);
-    },
-  },
   methods: {
-    click() {
-      $(document).trigger("mousedown");
-      this.$refs.sticker.click();
-    },
-    focusSticker() {
-      this.isFocused = true;
-    },
     updateModelValue(newValues) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
         ...newValues,
       });
-    },
-    deleteSticker() {
-      this.$emit("delete", this.id);
     },
     moveToFront() {
       this.$emit("moveToFront", this.id);
@@ -212,53 +389,14 @@ export default {
     duplicate() {
       this.$emit("duplicate", this.id);
     },
-    calculateBoundingBox(dim) {
-      let diameter = Math.sqrt(dim.height ** 2 + dim.width ** 2);
-      let angle = (Math.atan(dim.width / dim.height) * 180) / Math.PI;
-
-      // https://stackoverflow.com/questions/4467539/javascript-modulo-gives-a-negative-result-for-negative-numbers
-      const rotationAngle = ((this.modelValue.rotation + 90) % 180) - 90;
-
-      let dimensions = {
-        width:
-          diameter *
-          Math.max(
-            Math.abs(
-              Math.cos(Math.abs(angle + rotationAngle - 90) * (Math.PI / 180))
-            ),
-            Math.abs(
-              Math.cos(Math.abs(-angle + rotationAngle - 90) * (Math.PI / 180))
-            )
-          ),
-        height:
-          diameter *
-          Math.max(
-            Math.abs(
-              Math.sin(Math.abs(angle + rotationAngle - 90) * (Math.PI / 180))
-            ),
-            Math.abs(
-              Math.sin(Math.abs(-angle + rotationAngle - 90) * (Math.PI / 180))
-            )
-          ),
-      };
-
-      let margins = {
-        top: (dimensions.height - dim.height) / 2,
-        left: (dimensions.width - dim.width) / 2,
-      };
-
-      return { dimensions, margins };
-    },
-    updateOffset() {
-      var cell1 = document.getElementById("1-1"); // TODO: fix this
-      // https://stackoverflow.com/questions/46451319/access-el-inside-a-computed-property
-      // https://stackoverflow.com/questions/11634770/get-position-offset-of-element-relative-to-a-parent-container
-      this.offsetTop = cell1.offsetTop;
-      this.offsetLeft = cell1.offsetLeft;
-    },
   },
   beforeUpdate() {
     this.colors = this.modelValue.colors || [];
+  },
+  mounted() {
+    $(this.$refs.settings).on("mousedown touchstart", (e) => {
+      e.stopPropagation();
+    });
   },
 };
 </script>

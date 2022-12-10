@@ -679,6 +679,8 @@ export default {
     var sticker = $(this.$refs.sticker);
     var startPos;
     var startShift;
+    var element = document.getElementById("pinch-zoom");
+    var scale = 1;
 
     rotateHandle.on("mousedown touchstart", function () {
       dragging = true;
@@ -731,6 +733,8 @@ export default {
       startShift = this.modelValue.position;
     });
     sticker.on("mousedown touchstart", (e) => {
+      scale = element.getBoundingClientRect().width / element.offsetWidth;
+
       if (!resizing && this.isFocused) {
         moving = true;
         startPos = {
@@ -762,9 +766,11 @@ export default {
       resizing = false;
     });
     sticker.on("mousemove touchmove", (e) => {
-      if (this.isFocused) {
-        e.stopPropagation();
+      if (!this.isFocused) {
+        return;
       }
+      console.log("mousemove");
+      e.stopPropagation();
 
       var ePos = { x: e.clientX, y: e.clientY };
       if (
@@ -784,8 +790,8 @@ export default {
       if (dragging) {
         // TODO: rotate handle
       } else if (moving) {
-        var newX = startShift.left + ePos.x - startPos.x;
-        var newY = startShift.top + ePos.y - startPos.y;
+        var newX = startShift.left + (ePos.x - startPos.x) / scale;
+        var newY = startShift.top + (ePos.y - startPos.y) / scale;
 
         var remX = Math.abs(newX % 174);
         if (remX < 10 || remX > 166) {
@@ -801,18 +807,24 @@ export default {
           position: { top: newY, left: newX },
         });
       } else if (resizing) {
+        // var element = document.getElementById("pinch-zoom");
+        // var scale = element.getBoundingClientRect().width / element.offsetWidth;
+        // console.log(scale);
+        // newWidth = newWidth / scale;
+        // newHeight = newHeight / scale;
+
         var newWidth =
           startShift.dimensions.width +
-          (ePos.x * Math.cos(this.rotationRadians) +
-            ePos.y * Math.sin(this.rotationRadians)) -
-          (startPos.x * Math.cos(this.rotationRadians) +
-            startPos.y * Math.sin(this.rotationRadians));
+          ((ePos.x / scale) * Math.cos(this.rotationRadians) +
+            (ePos.y / scale) * Math.sin(this.rotationRadians)) -
+          ((startPos.x / scale) * Math.cos(this.rotationRadians) +
+            (startPos.y / scale) * Math.sin(this.rotationRadians));
         var newHeight =
           startShift.dimensions.height -
-          (ePos.x * Math.sin(this.rotationRadians) -
-            ePos.y * Math.cos(this.rotationRadians)) +
-          (startPos.x * Math.sin(this.rotationRadians) -
-            startPos.y * Math.cos(this.rotationRadians));
+          ((ePos.x / scale) * Math.sin(this.rotationRadians) -
+            (ePos.y / scale) * Math.cos(this.rotationRadians)) +
+          ((startPos.x / scale) * Math.sin(this.rotationRadians) -
+            (startPos.y / scale) * Math.cos(this.rotationRadians));
 
         var remWidth = Math.abs(newWidth % 174);
         if (remWidth < 10 || remWidth > 164) {

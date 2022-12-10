@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column" style="margin-bottom: 10rem">
+  <div class="d-flex flex-column">
     <planner-cell
       v-for="cell in 3"
       :key="cell"
