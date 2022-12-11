@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="page">
     <div
       ref="sticker"
       :class="
@@ -11,9 +11,9 @@
         this.modelValue.rotation -
         this.modelValue.rotation +
         'deg); top: ' +
-        (this.modelValue.position.top + this.offsetTop) +
+        (this.modelValue.pos.y + this.offsetTop) +
         'px; left: ' +
-        (this.modelValue.position.left + this.offsetLeft) +
+        (this.modelValue.pos.x + this.offsetLeft) +
         'px; ' +
         (this.isFocused ? ' z-index: 100;' : '') +
         'width: ' +
@@ -23,6 +23,7 @@
         'px; pointer-events: none; '
       "
       v-if="visible"
+      @click="focusSticker"
     >
       <div
         class="position-absolute"
@@ -35,7 +36,6 @@
           boundingBox.margins.left +
           'px;'
         "
-        @click="focusSticker"
       >
         <div
           :style="
@@ -43,9 +43,9 @@
               ? `opacity: ${75 * modelValue.opacity}%;`
               : `opacity: ${modelValue.opacity};`) +
             'width: ' +
-            this.modelValue.dimensions.width +
+            this.modelValue.dim.w +
             'px; height: ' +
-            this.modelValue.dimensions.height +
+            this.modelValue.dim.h +
             'px;'
           "
         >
@@ -106,420 +106,17 @@
         </button>
       </div>
     </div>
-    <div class="settings d-flex" v-if="isFocused" style="z-index: 1000">
-      <div class="d-flex flex-column border-end border-secondary my-2 px-2">
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Actions</label
-        >
-        <button
-          class="btn btn-outline-secondary"
-          title="duplicate"
-          @click="duplicate"
-        >
-          <font-awesome-icon icon="fa-solid fa-copy" />
-        </button>
-      </div>
-      <div
-        class="d-flex flex-column border-end border-secondary my-2 px-2"
-        v-if="modelValue.colors != null"
-      >
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Fill</label
-        >
-        <div class="d-flex">
-          <div v-for="index in colors.length" :key="index" class="p-2">
-            <label class="form-label text-nowrap">Color {{ index }}</label>
-            <input
-              type="color"
-              :id="'color' + index"
-              class="form-control form-control-color m-auto"
-              :name="'color' + index"
-              v-model="colors[index - 1]"
-              @change="updateModelValue({ colors: colors })"
-            />
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap">Opacity</label>
-            <!-- https://stackoverflow.com/questions/47311936/v-model-and-child-components -->
-            <input
-              type="number"
-              step=".01"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.opacity"
-              @change="
-                updateModelValue({
-                  opacity: Math.max(Math.min($event.target.value, 1), 0),
-                })
-              "
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="d-flex flex-column border-end border-secondary my-2 px-2"
-        v-if="modelValue.font != null"
-      >
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Font</label
-        >
-        <div class="d-flex">
-          <div class="p-2">
-            <label class="form-label text-nowrap">Color</label>
-            <input
-              type="color"
-              class="form-control form-control-color m-auto"
-              :value="modelValue.font.color"
-              @input="
-                updateModelValue({
-                  font: { ...modelValue.font, color: $event.target.value },
-                })
-              "
-            />
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap">Font</label>
-            <select
-              class="form-select w-auto"
-              :value="modelValue.font.family"
-              @input="
-                updateModelValue({
-                  font: { ...modelValue.font, family: $event.target.value },
-                })
-              "
-            >
-              <option v-for="font in fonts.sort()" :key="font" :value="font">
-                {{ font }}
-              </option>
-            </select>
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap">Size</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.font.size"
-              @input="
-                updateModelValue({
-                  font: { ...modelValue.font, size: $event.target.value },
-                })
-              "
-            />
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap">Bold</label>
-            <button
-              :class="`btn btn-outline-secondary d-block ${
-                modelValue.font.bold ? 'active' : ''
-              }`"
-              @click="
-                updateModelValue({
-                  font: { ...modelValue.font, bold: !modelValue.font.bold },
-                })
-              "
-            >
-              <font-awesome-icon icon="fa-solid fa-bold" />
-            </button>
-          </div>
-        </div>
-      </div>
-      <div
-        class="d-flex flex-column border-end border-secondary my-2 px-2"
-        v-if="modelValue.border"
-      >
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Border</label
-        >
-        <div class="d-flex">
-          <div class="p-2">
-            <label class="form-label text-nowrap">On/Off</label>
-            <div class="form-check form-switch">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                :checked="modelValue.border.on"
-                @click="
-                  updateModelValue({
-                    border: { ...modelValue.border, on: !modelValue.border.on },
-                  })
-                "
-              />
-            </div>
-          </div>
-          <div class="p-2" v-if="modelValue.border.on">
-            <label class="form-label text-nowrap">Color</label>
-            <input
-              type="color"
-              class="form-control form-control-color m-auto"
-              :value="modelValue.border.color"
-              @input="
-                updateModelValue({
-                  border: { ...modelValue.border, color: $event.target.value },
-                })
-              "
-            />
-          </div>
-          <div class="p-2" v-if="modelValue.border.on">
-            <label class="form-label text-nowrap">Style</label>
-            <select
-              class="form-select w-auto"
-              :value="modelValue.border.style"
-              @input="
-                updateModelValue({
-                  border: { ...modelValue.border, style: $event.target.value },
-                })
-              "
-            >
-              <option
-                v-for="style in borderStyles"
-                :key="style"
-                :value="style.toLowerCase()"
-              >
-                {{ style }}
-              </option>
-            </select>
-          </div>
-          <div class="p-2" v-if="modelValue.border.on">
-            <label class="form-label text-nowrap">Width</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.border.width"
-              @input="
-                updateModelValue({
-                  border: {
-                    ...modelValue.border,
-                    width: parseFloat($event.target.value),
-                  },
-                })
-              "
-            />
-          </div>
-          <div class="p-2" v-if="modelValue.border.on">
-            <label class="form-label text-nowrap">Inset</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.border.inset"
-              @input="
-                updateModelValue({
-                  border: {
-                    ...modelValue.border,
-                    inset: parseFloat($event.target.value),
-                  },
-                })
-              "
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="d-flex flex-column border-end border-secondary my-2 px-2"
-        v-if="modelValue.dimensions != null"
-      >
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Dimensions</label
-        >
-        <div class="d-flex">
-          <div
-            class="p-2 border-end"
-            v-if="modelValue.dimensions.width != null"
-          >
-            <label class="form-label text-nowrap">Width</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.dimensions.width"
-              @input="
-                updateModelValue({
-                  dimensions: {
-                    ...modelValue.dimensions,
-                    width: parseFloat($event.target.value),
-                  },
-                })
-              "
-            />
-          </div>
-          <div
-            class="p-2 border-end"
-            v-if="modelValue.dimensions.height != null"
-          >
-            <label class="form-label text-nowrap">Height</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.dimensions.height"
-              @input="
-                updateModelValue({
-                  dimensions: {
-                    ...modelValue.dimensions,
-                    height: parseFloat($event.target.value),
-                  },
-                })
-              "
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="d-flex flex-column border-end border-secondary my-2 px-2"
-        v-if="modelValue.scale != null"
-      >
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Scale</label
-        >
-        <div class="d-flex">
-          <div
-            class="p-2 border-end"
-            v-if="modelValue.dimensions.width != null"
-          >
-            <input
-              type="range"
-              class="form-range"
-              min="-2"
-              max="2"
-              step="1"
-              :value="modelValue.scale"
-              @input="
-                updateModelValue({
-                  scale: parseFloat($event.target.value),
-                })
-              "
-            />
-            <div class="d-block m-auto">
-              <input
-                type="number"
-                class="form-control form-control-small text-center d-inline-block"
-                :value="2 ** modelValue.scale * 100"
-                @change="
-                  updateModelValue({
-                    scale: Math.log2(parseFloat($event.target.value) / 100),
-                  })
-                "
-              />
-              <label class="px-2">%</label>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex flex-column border-end border-secondary my-2 px-2">
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          v-if="modelValue.rotation != null"
-          >Rotate</label
-        >
-        <div class="d-flex">
-          <div class="p-2 border-end">
-            <label class="form-label text-nowrap">Degrees</label>
-            <input
-              type="number"
-              class="form-control form-control-small m-auto text-center"
-              :value="modelValue.rotation"
-              @input="
-                updateModelValue({
-                  rotation: parseFloat($event.target.value),
-                })
-              "
-            />
-          </div>
-        </div>
-      </div>
-      <div class="d-flex flex-column border-end border-secondary my-2 px-2">
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          >Order</label
-        >
-        <button class="btn btn-outline-secondary" @click="moveToFront">
-          <font-awesome-icon icon="fa-solid fa-angles-up" />
-        </button>
-        <button class="btn btn-outline-secondary" @click="moveUp">
-          <font-awesome-icon icon="fa-solid fa-angle-up" />
-        </button>
-        <button class="btn btn-outline-secondary" @click="moveDown">
-          <font-awesome-icon icon="fa-solid fa-angle-down" />
-        </button>
-        <button class="btn btn-outline-secondary" @click="moveToBack">
-          <font-awesome-icon icon="fa-solid fa-angles-down" />
-        </button>
-      </div>
-      <div class="d-flex flex-column border-end border-secondary my-2 px-2">
-        <label
-          class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
-          v-if="modelValue.align != null"
-          >Align</label
-        >
-        <div class="d-flex">
-          <div class="p-2">
-            <label class="form-label text-nowrap"></label>
-            <button
-              :class="`btn btn-outline-secondary d-block ${
-                modelValue.align === 'start' ? 'active' : ''
-              }`"
-              @click="
-                updateModelValue({
-                  align: 'start',
-                })
-              "
-            >
-              <font-awesome-icon icon="fa-solid fa-align-left" />
-            </button>
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap"></label>
-            <button
-              :class="`btn btn-outline-secondary d-block ${
-                modelValue.align === 'center' ? 'active' : ''
-              }`"
-              @click="
-                updateModelValue({
-                  align: 'center',
-                })
-              "
-            >
-              <font-awesome-icon icon="fa-solid fa-align-center" />
-            </button>
-          </div>
-          <div class="p-2">
-            <label class="form-label text-nowrap"></label>
-            <button
-              :class="`btn btn-outline-secondary d-block ${
-                modelValue.align === 'end' ? 'active' : ''
-              }`"
-              @click="
-                updateModelValue({
-                  align: 'end',
-                })
-              "
-            >
-              <font-awesome-icon icon="fa-solid fa-align-right" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
     <div v-if="isFocused" class="backdrop" @click="removeFocus"></div>
   </div>
 </template>
 
 <script>
 import $ from "jquery";
+// import { debounce } from "lodash";
 
 export default {
   props: ["id", "modelValue", "snapHeight"],
-  emits: [
-    "update:modelValue",
-    "delete",
-    "moveToFront",
-    "moveUp",
-    "moveDown",
-    "moveToBack",
-    "duplicate",
-  ],
+  emits: ["update:modelValue", "update:focus", "delete"],
   data() {
     return {
       visible: true,
@@ -527,37 +124,7 @@ export default {
       offsetTop: 0,
       offsetLeft: 0,
       isFocused: false,
-      color: "#00ff00",
       colors: [],
-      fontSize: null,
-      fonts: [
-        "Amatic SC",
-        "Atma",
-        "Barrio",
-        "Birthstone Bounce",
-        "Bonbon",
-        "Butterfly Kids",
-        "Codystar",
-        "Fredericka the Great",
-        "Hachi Maru Pop",
-        "Just Another Hand",
-        "Londrina Outline",
-        "Luckiest Guy",
-        "Ms Madi",
-        "Nanum Pen Script",
-        "Oooh Baby",
-        "Permanent Marker",
-        "Ribeye Marrow",
-        "Rochester",
-        "Rock Salt",
-        "Sacramento",
-        "Send Flowers",
-        "Shadows Into Light Two",
-        "Special Elite",
-        "Unkempt",
-        "Waiting for the Sunrise",
-      ],
-      borderStyles: ["Solid", "Dotted", "Dashed", "Double"],
     };
   },
   computed: {
@@ -568,8 +135,8 @@ export default {
       return (this.modelValue.rotation / 180) * Math.PI;
     },
     ratio() {
-      let h = this.modelValue.dimensions.height;
-      let w = this.modelValue.dimensions.width;
+      let h = this.modelValue.dim.h;
+      let w = this.modelValue.dim.w;
       let H = this.boundingBox.dimensions.height;
       let W = this.boundingBox.dimensions.width;
       let x = W - ((h / w) * (H - (h / w) * W)) / (1 - (h / w) ** 2);
@@ -577,7 +144,12 @@ export default {
       return x / y;
     },
     boundingBox() {
-      return this.calculateBoundingBox(this.modelValue.dimensions);
+      return this.calculateBoundingBox(this.modelValue.dim);
+    },
+  },
+  watch: {
+    isFocused(newValue) {
+      this.$emit("update:focus", newValue);
     },
   },
   methods: {
@@ -588,33 +160,19 @@ export default {
     focusSticker() {
       this.isFocused = true;
     },
-    updateModelValue(newValues) {
-      this.$emit("update:modelValue", {
-        ...this.modelValue,
-        ...newValues,
-      });
-    },
+    // updateModelValue: debounce(function (newValues) {
+    //   this.$emit("update:modelValue", {
+    //     ...this.modelValue,
+    //     ...newValues,
+    //   });
+    // }, 1000),
     deleteSticker() {
+      this.isFocused = false;
       this.$emit("delete", this.id);
     },
-    moveToFront() {
-      this.$emit("moveToFront", this.id);
-    },
-    moveUp() {
-      this.$emit("moveUp", this.id);
-    },
-    moveDown() {
-      this.$emit("moveDown", this.id);
-    },
-    moveToBack() {
-      this.$emit("moveToBack", this.id);
-    },
-    duplicate() {
-      this.$emit("duplicate", this.id);
-    },
     calculateBoundingBox(dim) {
-      let diameter = Math.sqrt(dim.height ** 2 + dim.width ** 2);
-      let angle = (Math.atan(dim.width / dim.height) * 180) / Math.PI;
+      let diameter = Math.sqrt(dim.h ** 2 + dim.w ** 2);
+      let angle = (Math.atan(dim.w / dim.h) * 180) / Math.PI;
 
       // https://stackoverflow.com/questions/4467539/javascript-modulo-gives-a-negative-result-for-negative-numbers
       const rotationAngle = ((this.modelValue.rotation + 90) % 180) - 90;
@@ -643,8 +201,8 @@ export default {
       };
 
       let margins = {
-        top: (dimensions.height - dim.height) / 2,
-        left: (dimensions.width - dim.width) / 2,
+        top: (dimensions.height - dim.h) / 2,
+        left: (dimensions.width - dim.w) / 2,
       };
 
       return { dimensions, margins };
@@ -659,9 +217,6 @@ export default {
     removeFocus() {
       this.isFocused = false;
     },
-  },
-  beforeUpdate() {
-    this.colors = this.modelValue.colors || [];
   },
   mounted() {
     $(window).resize(() => {
@@ -730,7 +285,7 @@ export default {
         };
       }
 
-      startShift = this.modelValue.position;
+      startShift = this.modelValue.pos;
     });
     sticker.on("mousedown touchstart", (e) => {
       scale = element.getBoundingClientRect().width / element.offsetWidth;
@@ -757,7 +312,7 @@ export default {
           };
         }
 
-        startShift = this.modelValue.position;
+        startShift = this.modelValue.pos;
       }
     });
     $(document).on("mouseup touchend", function () {
@@ -765,13 +320,14 @@ export default {
       moving = false;
       resizing = false;
     });
-    sticker.on("mousemove touchmove", (e) => {
+    $(this.$refs.page).on("mousemove touchmove", (e) => {
       if (!this.isFocused) {
         return;
       }
-      console.log("mousemove");
+      // console.log("mousemove");
       e.stopPropagation();
 
+      // var updateValue = debounce(() => {
       var ePos = { x: e.clientX, y: e.clientY };
       if (
         e.type == "touchstart" ||
@@ -790,8 +346,8 @@ export default {
       if (dragging) {
         // TODO: rotate handle
       } else if (moving) {
-        var newX = startShift.left + (ePos.x - startPos.x) / scale;
-        var newY = startShift.top + (ePos.y - startPos.y) / scale;
+        var newX = startShift.x + (ePos.x - startPos.x) / scale;
+        var newY = startShift.y + (ePos.y - startPos.y) / scale;
 
         var remX = Math.abs(newX % 174);
         if (remX < 10 || remX > 166) {
@@ -804,7 +360,7 @@ export default {
 
         this.$emit("update:modelValue", {
           ...this.modelValue,
-          position: { top: newY, left: newX },
+          pos: { y: newY, x: newX },
         });
       } else if (resizing) {
         // var element = document.getElementById("pinch-zoom");
@@ -814,13 +370,13 @@ export default {
         // newHeight = newHeight / scale;
 
         var newWidth =
-          startShift.dimensions.width +
+          startShift.dim.w +
           ((ePos.x / scale) * Math.cos(this.rotationRadians) +
             (ePos.y / scale) * Math.sin(this.rotationRadians)) -
           ((startPos.x / scale) * Math.cos(this.rotationRadians) +
             (startPos.y / scale) * Math.sin(this.rotationRadians));
         var newHeight =
-          startShift.dimensions.height -
+          startShift.dim.h -
           ((ePos.x / scale) * Math.sin(this.rotationRadians) -
             (ePos.y / scale) * Math.cos(this.rotationRadians)) +
           ((startPos.x / scale) * Math.sin(this.rotationRadians) -
@@ -835,24 +391,25 @@ export default {
           newHeight = Math.round(newHeight / this.snapHeight) * this.snapHeight;
         }
 
-        if (this.modelValue.dimensions.ratio) {
-          var ratioWidth = newHeight / this.modelValue.dimensions.ratio;
-          var ratioHeight = newWidth * this.modelValue.dimensions.ratio;
+        if (this.modelValue.dim.r) {
+          var ratioWidth = newHeight / this.modelValue.dim.r;
+          var ratioHeight = newWidth * this.modelValue.dim.r;
 
           newWidth = Math.min(newWidth, ratioWidth);
           newHeight = Math.min(newHeight, ratioHeight);
         }
 
         let newDimensions = {
-          width: Math.max(Math.round(newWidth), 5),
-          height: Math.max(Math.round(newHeight), 5),
+          ...this.modelValue.dim,
+          w: Math.max(Math.round(newWidth), 5),
+          h: Math.max(Math.round(newHeight), 5),
         };
 
-        if (this.modelValue.dimensions.ratio) {
-          newDimensions.ratio = this.modelValue.dimensions.ratio;
-        }
+        // if (this.modelValue.dim.r) {
+        //   newDimensions.r = this.modelValue.dim.r;
+        // }
 
-        let newPosition = this.modelValue.position;
+        let newPosition = this.modelValue.pos;
 
         const rotation = ((this.modelValue.rotation % 360) + 360) % 360;
         const rotationRad = ((rotation % 90) * Math.PI) / 180;
@@ -860,54 +417,52 @@ export default {
         const cosRotation = Math.cos(rotationRad);
         if (rotation < 90) {
           newPosition = {
-            top: this.modelValue.position.top,
-            left:
-              this.modelValue.position.left -
-              sinRotation *
-                (newDimensions.height - this.modelValue.dimensions.height),
+            y: this.modelValue.pos.y,
+            x:
+              this.modelValue.pos.x -
+              sinRotation * (newDimensions.h - this.modelValue.dim.h),
           };
         } else if (rotation < 180) {
           newPosition = {
-            top:
-              this.modelValue.position.top -
-              sinRotation *
-                (newDimensions.height - this.modelValue.dimensions.height),
-            left:
-              this.modelValue.position.left -
-              (sinRotation *
-                (newDimensions.width - this.modelValue.dimensions.width) +
-                cosRotation *
-                  (newDimensions.height - this.modelValue.dimensions.height)),
+            y:
+              this.modelValue.pos.y -
+              sinRotation * (newDimensions.h - this.modelValue.dim.h),
+            x:
+              this.modelValue.pos.x -
+              (sinRotation * (newDimensions.w - this.modelValue.dim.w) +
+                cosRotation * (newDimensions.h - this.modelValue.dim.h)),
           };
         } else if (rotation < 270) {
           newPosition = {
-            top:
-              this.modelValue.position.top -
-              (sinRotation *
-                (newDimensions.width - this.modelValue.dimensions.width) +
-                cosRotation *
-                  (newDimensions.height - this.modelValue.dimensions.height)),
-            left:
-              this.modelValue.position.left -
-              cosRotation *
-                (newDimensions.width - this.modelValue.dimensions.width),
+            y:
+              this.modelValue.pos.y -
+              (sinRotation * (newDimensions.w - this.modelValue.dim.w) +
+                cosRotation * (newDimensions.h - this.modelValue.dim.h)),
+            x:
+              this.modelValue.pos.x -
+              cosRotation * (newDimensions.w - this.modelValue.dim.w),
           };
         } else {
           newPosition = {
-            top:
-              this.modelValue.position.top -
-              cosRotation *
-                (newDimensions.width - this.modelValue.dimensions.width),
-            left: this.modelValue.position.left,
+            y:
+              this.modelValue.pos.y -
+              cosRotation * (newDimensions.w - this.modelValue.dim.w),
+            x: this.modelValue.pos.x,
           };
         }
 
         this.$emit("update:modelValue", {
           ...this.modelValue,
-          dimensions: newDimensions,
-          position: newPosition,
+          dim: newDimensions,
+          pos: {
+            x: Math.round(newPosition.x),
+            y: Math.round(newPosition.y),
+          },
         });
       }
+      // }, 0.01);
+
+      // updateValue();
     });
 
     $(document).on("mousedown touchstart", (e) => {
@@ -947,7 +502,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   z-index: 99;
   background-color: rgba(0, 0, 0, 0);
 }

@@ -1,29 +1,33 @@
 <template>
-  <!-- <sticker
-      :id="text"
-      v-for="text in texts"
-      :key="text"
-      v-model="text.position"
-    >
-      <textarea
-        :style="{
-          fontFamily: 'Amatic SC',
-          fontWeight: 700,
-          resize: 'none',
-          width: text.width + 'px',
-        }"
-        class="text-center fs-1 border-0 bg-transparent textwhite overflow-hidden"
-        v-model="text.text"
-        @input="auto_grow($event.target)"
-      ></textarea>
-    </sticker> -->
-  <p>temp</p>
+  <textarea
+    :style="{
+      color: modelValue.font.color,
+      fontFamily: modelValue.font.family,
+      fontWeight: 400,
+      fontSize: modelValue.font.size + 'px !important',
+      resize: 'none',
+      width:
+        modelValue.dim.w -
+        2 *
+          (modelValue.border.width + modelValue.border.inset) *
+          modelValue.border.on +
+        'px',
+      height: '100%',
+    }"
+    :colors="modelValue.colors"
+    :class="`text-${
+      modelValue.align
+    } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
+      modelValue.font.bold ? 'fw-bold' : ''
+    }`"
+    v-model="modelValue.text"
+    @input="auto_grow($event.target, sticker)"
+  ></textarea>
 </template>
 
 <script>
-import Sticker from "../components/Sticker.vue";
-
 export default {
-  components: { Sticker },
+  props: ["modelValue"],
+  emit: ["update:modelValue"],
 };
 </script>

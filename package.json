@@ -20,6 +20,7 @@
     "firebaseui": "^6.0.1",
     "html2canvas": "^1.4.1",
     "jquery": "^3.6.1",
+    "lodash": "^4.17.21",
     "pinch-zoom-js": "^2.3.5",
     "vue": "^3.0.0",
     "vue-router": "^4.1.6"

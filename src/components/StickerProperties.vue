@@ -6,11 +6,13 @@
     ref="settings"
   >
     <sticker-property-group title="Actions">
-      <sticker-property-button
-        title="duplicate"
-        icon="fa-solid fa-copy"
-        @click="duplicate"
-      ></sticker-property-button>
+      <sticker-property>
+        <sticker-property-button
+          title="duplicate"
+          icon="fa-solid fa-copy"
+          @click="duplicate"
+        ></sticker-property-button>
+      </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Fill">
       <sticker-property
@@ -171,41 +173,32 @@
         />
       </sticker-property>
     </sticker-property-group>
-    <sticker-property-group
-      title="Dimensions"
-      v-if="modelValue.dimensions != null"
-    >
-      <sticker-property
-        title="Width"
-        v-if="modelValue.dimensions.width != null"
-      >
+    <sticker-property-group title="Dimensions" v-if="modelValue.dim != null">
+      <sticker-property title="Width" v-if="modelValue.dim.w != null">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.dimensions.width"
+          :value="modelValue.dim.w"
           @input="
             updateModelValue({
-              dimensions: {
-                ...modelValue.dimensions,
-                width: parseFloat($event.target.value),
+              dim: {
+                ...modelValue.dim,
+                w: parseFloat($event.target.value),
               },
             })
           "
         />
       </sticker-property>
-      <sticker-property
-        title="Height"
-        v-if="modelValue.dimensions.height != null"
-      >
+      <sticker-property title="Height" v-if="modelValue.dim.h != null">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.dimensions.height"
+          :value="modelValue.dim.h"
           @input="
             updateModelValue({
-              dimensions: {
-                ...modelValue.dimensions,
-                height: parseFloat($event.target.value),
+              dim: {
+                ...modelValue.dim,
+                h: parseFloat($event.target.value),
               },
             })
           "
@@ -213,7 +206,7 @@
       </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Scale" v-if="modelValue.scale != null">
-      <div class="p-2 border-end" v-if="modelValue.dimensions.width != null">
+      <div class="p-2 border-end">
         <input
           type="range"
           class="form-range"
@@ -257,26 +250,34 @@
       </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Order">
-      <sticker-property-button
-        title="move to front"
-        icon="fa-solid fa-angles-up"
-        @click="moveToFront"
-      ></sticker-property-button>
-      <sticker-property-button
-        title="move up"
-        icon="fa-solid fa-angle-up"
-        @click="moveUp"
-      ></sticker-property-button>
-      <sticker-property-button
-        title="move down"
-        icon="fa-solid fa-angle-down"
-        @click="moveDown"
-      ></sticker-property-button>
-      <sticker-property-button
-        title="move to back"
-        icon="fa-solid fa-angles-down"
-        @click="moveToBack"
-      ></sticker-property-button>
+      <sticker-property>
+        <sticker-property-button
+          title="move to front"
+          icon="fa-solid fa-angles-up"
+          @click="moveToFront"
+        ></sticker-property-button>
+      </sticker-property>
+      <sticker-property>
+        <sticker-property-button
+          title="move up"
+          icon="fa-solid fa-angle-up"
+          @click="moveUp"
+        ></sticker-property-button>
+      </sticker-property>
+      <sticker-property>
+        <sticker-property-button
+          title="move down"
+          icon="fa-solid fa-angle-down"
+          @click="moveDown"
+        ></sticker-property-button>
+      </sticker-property>
+      <sticker-property>
+        <sticker-property-button
+          title="move to back"
+          icon="fa-solid fa-angles-down"
+          @click="moveToBack"
+        ></sticker-property-button>
+      </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Align" v-if="modelValue.align != null">
       <sticker-property>
@@ -318,6 +319,7 @@
 
 <script>
 import $ from "jquery";
+import { debounce } from "lodash";
 import StickerProperty from "./StickerProperty.vue";
 import StickerPropertyButton from "./StickerPropertyButton.vue";
 import StickerPropertyGroup from "./StickerPropertyGroup.vue";
@@ -327,7 +329,6 @@ export default {
   props: ["id", "modelValue"],
   emits: [
     "update:modelValue",
-    "delete",
     "moveToFront",
     "moveUp",
     "moveDown",
@@ -368,12 +369,18 @@ export default {
     };
   },
   methods: {
-    updateModelValue(newValues) {
+    updateModelValue: debounce(function (newValues) {
       this.$emit("update:modelValue", {
         ...this.modelValue,
         ...newValues,
       });
-    },
+    }, 100),
+    // updateModelValue(newValues) {
+    //   this.$emit("update:modelValue", {
+    //     ...this.modelValue,
+    //     ...newValues,
+    //   });
+    // },
     moveToFront() {
       this.$emit("moveToFront", this.id);
     },
@@ -390,10 +397,18 @@ export default {
       this.$emit("duplicate", this.id);
     },
   },
-  beforeUpdate() {
-    this.colors = this.modelValue.colors || [];
+  watch: {
+    modelValue() {
+      this.colors = this.modelValue.colors || [];
+      // console.log("model value changed");
+    },
   },
+  // beforeUpdate() {
+  //   this.colors = this.modelValue.colors || [];
+  //   console.log(this.colors);
+  // },
   mounted() {
+    this.colors = this.modelValue.colors || [];
     $(this.$refs.settings).on("mousedown touchstart", (e) => {
       e.stopPropagation();
     });

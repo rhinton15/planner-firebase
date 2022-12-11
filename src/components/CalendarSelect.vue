@@ -1,5 +1,5 @@
 <template>
-  <div style="font-size: 12px">
+  <div style="font-size: 12px; width: 224px">
     <div class="d-flex justify-content-between align-items-center">
       <button class="btn btn-default" @click="prevMonth">
         <font-awesome-icon icon="fa-solid fa-chevron-left" />

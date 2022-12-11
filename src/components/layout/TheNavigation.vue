@@ -76,6 +76,7 @@
 <script>
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase";
+import $ from "jquery";
 
 export default {
   data() {
@@ -108,6 +109,11 @@ export default {
 
     onAuthStateChanged(auth, () => {
       this.updateAuthState();
+    });
+  },
+  mounted() {
+    $(".offcanvas-body a").click(() => {
+      $(".offcanvas .btn-close").click();
     });
   },
 };

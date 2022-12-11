@@ -16,9 +16,7 @@
               ? ''
               : dates[(week - 1) * 7 + day - 1]
           "
-          @addText="addText"
-          @addToDo="addToDo"
-          @addSticker="addSticker"
+          @showModal="showModal"
         ></planner-cell>
       </div>
     </div>
@@ -33,16 +31,10 @@ export default {
   components: { PlannerCell },
   mixins: [calendarMixin],
   props: ["disabled", "width", "height", "year", "month"],
-  emits: ["addText", "addToDo", "addSticker"],
+  emits: ["showModal"],
   methods: {
-    addText(props) {
-      this.$emit("addText", props);
-    },
-    addToDo(props) {
-      this.$emit("addToDo", props);
-    },
-    addSticker(props) {
-      this.$emit("addSticker", props);
+    showModal(props) {
+      this.$emit("showModal", props);
     },
   },
   computed: {

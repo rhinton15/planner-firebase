@@ -1,22 +1,36 @@
 <template>
   <div>
     <div class="m-auto position-relative" ref="page">
-      <div class="d-flex px-2" style="height: calc(100vh - 200px)">
-        <div class="d-none d-md-flex flex-column">
-          <button class="btn btn-outline-primary" @click="toggleTutorial">
-            Help
-          </button>
-          <button
-            :class="`btn btn-${saveButton.class}`"
-            :disabled="saveButton.disabled"
-            @click="saveChanges(currentWeek)"
-          >
-            <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
-            {{ saveButton.text }}
-          </button>
-          <calendar-select v-model="currentWeek"></calendar-select>
+      <div
+        class="d-flex px-2 flex-column flex-md-row"
+        style="height: calc(100vh - 200px)"
+      >
+        <div class="d-flex flex-column">
+          <div class="d-flex">
+            <button class="btn text-dark d-md-none" @click="toggleCalendar">
+              <font-awesome-icon icon="fa-solid fa-calendar-days" />
+            </button>
+            <button class="btn text-info" @click="toggleTutorial">
+              <font-awesome-icon icon="fa-solid fa-circle-info" />
+            </button>
+            <button
+              :class="`btn border-0 text-${saveButton.class}`"
+              :disabled="saveButton.disabled"
+              @click="saveChanges(currentWeek)"
+              :title="saveButton.text"
+            >
+              <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
+            </button>
+          </div>
+          <div :class="`d-${showingCalendar ? 'block' : 'none'} d-md-block`">
+            <calendar-select v-model="currentWeek"></calendar-select>
+          </div>
         </div>
-        <div class="pinch-zoom-container flex-fill">
+        <div
+          :class="`flex-fill d-${
+            showingCalendar ? 'none' : 'block'
+          } d-md-block`"
+        >
           <div
             class="d-flex flex-column pinch-zoom px-5"
             ref="planner"
@@ -52,9 +66,9 @@
                       <font-awesome-icon icon="fa-solid fa-chevron-right" />
                     </button>
                   </div>
-                  <div class="d-flex" v-if="level === 'week'">
+                  <div class="d-flex">
                     <label
-                      v-for="day in 7"
+                      v-for="day in days"
                       :key="day"
                       :style="`
                 font-family: '${headerSettings.day.family}', cursive;
@@ -64,15 +78,7 @@
                 width: 174px;
               `"
                       class="text-center fs-1"
-                      >{{
-                        new Date(
-                          parseInt(currentWeek.split("-")[0]),
-                          parseInt(currentWeek.split("-")[1]) - 1,
-                          day + parseInt(currentWeek.split("-")[2]) - 1
-                        ).toLocaleString("default", {
-                          weekday: "long",
-                        })
-                      }}</label
+                      >{{ day }}</label
                     >
                   </div>
                   <div class="d-flex" v-if="level === 'week'">
@@ -120,9 +126,6 @@
                   :disabled="!pageLoaded"
                   @showModal="showModal"
                 ></planner-day>
-                <!-- @addText="addText"
-                @addToDo="addToDo"
-                @addSticker="addSticker" -->
               </div>
               <div v-else-if="level === 'month'">
                 <planner-month
@@ -134,6 +137,7 @@
                   @addText="addText"
                   @addToDo="addToDo"
                   @addSticker="addSticker"
+                  @showModal="showModal"
                 ></planner-month>
               </div>
 
@@ -146,80 +150,60 @@
                 v-model="sticker.properties"
                 :snapHeight="cellHeight"
                 @delete="deleteSticker"
-                @moveToFront="moveToFront"
-                @moveUp="moveUp"
-                @moveDown="moveDown"
-                @moveToBack="moveToBack"
-                @duplicate="(index) => duplicate('sticker', stickers, index)"
+                @update:focus="(focus) => updateFocus(focus, sticker)"
               >
                 <div
                   v-if="sticker.properties.icon"
                   v-html="sticker.properties.icon"
                   :style="`
-                  font-size: ${sticker.properties.dimensions.height}px;
-                  line-height: ${sticker.properties.dimensions.height}px;
+                  font-size: ${sticker.properties.dim.h}px;
+                  line-height: ${sticker.properties.dim.h}px;
                   font-family: 'Noto Color Emoji';
                 `"
                   class="position-absolute"
                 ></div>
-                <!-- top: 560px;
-                  z-index: 2000;
-                  left: 220px; -->
+
                 <svg-sticker
-                  v-else
+                  v-else-if="sticker.properties.type"
                   :scale="sticker.properties.scale"
                   :colors="sticker.properties.colors"
                   :name="sticker.properties.type"
                 ></svg-sticker>
-              </sticker>
-              <sticker
-                :id="index"
-                v-for="(text, index) in texts"
-                :key="text"
-                :snapHeight="cellHeight"
-                v-model="text.properties"
-                @delete="deleteText"
-                @update:modelValue="auto_grow($refs[`text-${index}`][0], text)"
-              >
+
                 <template #text>
                   <textarea
+                    v-if="sticker.text !== undefined"
                     :ref="'text-' + index"
                     :style="{
-                      color: text.properties.font.color,
-                      fontFamily: text.properties.font.family,
+                      color: sticker.properties.font.color,
+                      fontFamily: sticker.properties.font.family,
                       fontWeight: 400,
-                      fontSize: text.properties.font.size + 'px !important',
+                      fontSize: sticker.properties.font.size + 'px !important',
                       resize: 'none',
                       width:
-                        text.properties.dimensions.width -
+                        sticker.properties.dim.w -
                         2 *
-                          (text.properties.border.width +
-                            text.properties.border.inset) *
-                          text.properties.border.on +
+                          (sticker.properties.border.width +
+                            sticker.properties.border.inset) *
+                          sticker.properties.border.on +
                         'px',
                       height: '100%',
                     }"
-                    :colors="text.properties.colors"
+                    :colors="sticker.properties.colors"
                     :class="`text-${
-                      text.properties.align
+                      sticker.properties.align
                     } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-                      text.properties.font.bold ? 'fw-bold' : ''
+                      sticker.properties.font.bold ? 'fw-bold' : ''
                     }`"
-                    v-model="text.text"
-                    @input="auto_grow($event.target, text)"
+                    v-model="sticker.text"
+                    @input="auto_grow($event.target, sticker)"
                   ></textarea>
-                </template>
-              </sticker>
-              <sticker
-                :id="index"
-                v-for="(text, index) in todos"
-                :key="text"
-                :snapHeight="cellHeight"
-                v-model="text.properties"
-                @delete="deleteToDo"
-              >
-                <template #text>
-                  <to-do-list v-model="text.properties"></to-do-list>
+
+                  <to-do-list
+                    v-else-if="sticker.properties.items"
+                    v-model="sticker.properties"
+                    :ref="'text-' + index"
+                  ></to-do-list>
                 </template>
               </sticker>
             </div>
@@ -227,13 +211,7 @@
         </div>
       </div>
     </div>
-    <!-- <button class="btn btn-outline-primary" @click="createPng">
-      Screenshot
-    </button>
-    <a id="downloadLnk" download="screenshot.jpeg" :href="output"
-      >Download as image</a
-    >
-    <img :src="output" style="width: 250px" /> -->
+
     <base-modal :open="showingTutorial" @close="toggleTutorial">
       <img
         src="@/assets/tutorial.jpg"
@@ -243,7 +221,7 @@
     </base-modal>
 
     <add-sticker-modal
-      :open="modalPosition"
+      :props="modalProps"
       @close="hideModal"
       @addText="addText"
       @addToDo="addToDo"
@@ -251,9 +229,14 @@
     ></add-sticker-modal>
 
     <sticker-properties
-      v-if="stickers?.length > 0"
-      :id="0"
-      v-model="stickers[0].properties"
+      v-if="focusedSticker != null"
+      :id="stickers.findIndex((sticker) => sticker === focusedSticker)"
+      v-model="focusedSticker.properties"
+      @moveToFront="moveToFront"
+      @moveUp="moveUp"
+      @moveDown="moveDown"
+      @moveToBack="moveToBack"
+      @duplicate="(index) => duplicate('sticker', stickers, index)"
     ></sticker-properties>
   </div>
 </template>
@@ -272,10 +255,8 @@ import StickerProperties from "../components/StickerProperties.vue";
 import html2canvas from "html2canvas";
 import PinchZoom from "pinch-zoom-js";
 
-// import { auth, db, functions } from "../firebase";
 import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-// import { httpsCallable } from "firebase/functions";
 
 import $ from "jquery";
 
@@ -322,7 +303,18 @@ export default {
       editingHeader: false,
       showingTutorial: false,
       saveStatus: "saved",
-      modalPosition: null,
+      modalProps: null,
+      focusedSticker: null,
+      showingCalendar: false,
+      days: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -346,9 +338,6 @@ export default {
     await setDoc(doc(db, "users", auth.currentUser.uid), {
       new: false,
     });
-
-    // const addAdmin = httpsCallable(functions, "addAdmin");
-    // await addAdmin({ email: "test@example.com" });
   },
   async mounted() {
     const el = document.querySelector("div.pinch-zoom");
@@ -419,13 +408,13 @@ export default {
     },
   },
   methods: {
-    showModal(position) {
+    showModal(props) {
       if (this.pageLoaded) {
-        this.modalPosition = position;
+        this.modalProps = props;
       }
     },
     hideModal() {
-      this.modalPosition = null;
+      this.modalProps = null;
     },
     prevWeek() {
       const currentWeekSplit = this.currentWeek.split("-");
@@ -464,14 +453,14 @@ export default {
       this.currentWeek = `${newWeek.getFullYear()}-${newWeek.getMonth() + 1}`;
     },
     addText() {
-      let newLength = this.texts.push({
+      let newLength = this.stickers.push({
         text: "",
         properties: {
-          position: this.modalPosition,
+          pos: this.modalProps.pos,
           opacity: 1,
-          dimensions: {
-            width: 174,
-            height: 50,
+          dim: {
+            w: 174,
+            h: 50,
           },
           font: {
             bold: false,
@@ -492,6 +481,7 @@ export default {
       });
       // https://stackoverflow.com/questions/59749325/vue-set-focus-to-dynamic-input-box
       this.$nextTick(() => {
+        console.log($(this.$refs[`text-${newLength - 1}`][0]));
         this.$refs[`text-${newLength - 1}`][0].focus();
         this.$refs[`text-${newLength - 1}`][0].click();
         // $("#text-" + (this.texts.length - 1)).focus();
@@ -500,19 +490,15 @@ export default {
       this.hideModal();
     },
     addToDo() {
-      this.todos.push({
+      let newLength = this.stickers.push({
         properties: {
           // text: "To Do 1\nTo Do 2\nTo Do 3",
-          items: [
-            { text: "To Do 1", done: false },
-            { text: "To Do 2", done: false },
-            { text: "To Do 3", done: false },
-          ],
-          position: this.modalPosition,
+          items: [],
+          pos: this.modalProps.pos,
           opacity: 1,
-          dimensions: {
-            width: 174,
-            height: 290,
+          dim: {
+            w: 174,
+            h: 50,
           },
           font: {
             bold: false,
@@ -530,6 +516,9 @@ export default {
           },
         },
       });
+      this.$nextTick(() => {
+        this.$refs[`text-${newLength - 1}`][0].click();
+      });
       this.hideModal();
     },
     addSticker(sticker) {
@@ -538,7 +527,7 @@ export default {
         properties: {
           // position: sticker.position,
           // colors: sticker.colors,
-          position: this.modalPosition,
+          pos: this.modalProps.pos,
           opacity: 1,
           scale: 0,
           rotation: 0,
@@ -552,6 +541,7 @@ export default {
           ...sticker,
         },
       });
+      console.log(this.stickers);
       this.hideModal();
     },
     moveToFront(index) {
@@ -576,13 +566,16 @@ export default {
     },
     duplicate(refPrefix, ary, index) {
       let item = JSON.parse(JSON.stringify(ary[index])); // deep copy
-      item.properties.position.left += 25;
-      item.properties.position.top += 25;
+      item.properties.pos.x += 25;
+      item.properties.pos.y += 25;
       const newLength = ary.push(item);
 
       this.$nextTick(() => {
         this.$refs[`${refPrefix}-${newLength - 1}`][0].click();
       });
+    },
+    updateFocus(focus, sticker) {
+      this.focusedSticker = focus ? sticker : null;
     },
     deleteSticker(index) {
       this.stickers.splice(index, 1);
@@ -596,7 +589,7 @@ export default {
     auto_grow(element, text) {
       this.$nextTick(() => {
         element.style.height = "5px";
-        text.properties.dimensions.height =
+        text.properties.dim.h =
           element.scrollHeight +
           2 *
             (text.properties.border.width + text.properties.border.inset) *
@@ -609,6 +602,8 @@ export default {
       this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
     },
     async loadPlanner(week) {
+      this.showingCalendar = false;
+      this.focusedSticker = null;
       this.pageLoaded = false;
       this.texts = null;
       this.todos = null;
@@ -642,13 +637,49 @@ export default {
           },
         };
 
+        this.stickers = this.stickers.concat(this.texts).concat(this.todos);
+        this.texts = null;
+        this.todos = null;
+        console.log(this.stickers);
+
         this.stickers.forEach((sticker) => {
-          // sticker.properties.scale = sticker.properties.scale || 1;
-          sticker.properties.rotation = sticker.properties.rotation || 0;
-          sticker.properties.align = sticker.properties.align || "center";
-          delete sticker.properties.align;
-          // delete sticker.rotation;
-        }); // assign default value
+          if (sticker.properties.dimensions) {
+            sticker.properties.dim = {
+              w: sticker.properties.dimensions.width,
+              h: sticker.properties.dimensions.height,
+              ...(sticker.properties.dimensions.ratio && {
+                r: sticker.properties.dimensions.ratio,
+              }),
+            };
+
+            delete sticker.properties.dimensions;
+          }
+
+          if (sticker.properties.position) {
+            sticker.properties.pos = {
+              x: sticker.properties.position.left,
+              y: sticker.properties.position.top,
+            };
+
+            delete sticker.properties.position;
+          }
+        });
+
+        console.log(
+          this.stickers.map((sticker) => {
+            return { props: sticker.properties || sticker };
+          })
+        );
+        // this.stickers.forEach((sticker) => {
+        //   // sticker.properties.scale = sticker.properties.scale || 1;
+        //   sticker.properties.rotation = sticker.properties.rotation || 0;
+        //   sticker.properties.align = sticker.properties.align || "center";
+        //   delete sticker.properties.align;
+        //   // delete sticker.rotation;
+        // }); // assign default value
+
+        // this.focusedSticker = this.stickers[0];
+        // console.log(this.focusedSticker);
 
         this.$nextTick(() => {
           this.pendingChanges = false;
@@ -659,15 +690,16 @@ export default {
       if (this.pageLoaded) {
         this.saveStatus = "saving";
         try {
-          await setDoc(
-            doc(db, "users", auth.currentUser.uid, "planner", week),
-            {
-              header: this.headerSettings,
-              text: this.texts.filter((item) => item.text !== ""),
-              todo: this.todos,
-              stickers: this.stickers,
-            }
-          );
+          console.log(week);
+          // await setDoc(
+          //   doc(db, "users", auth.currentUser.uid, "planner", week),
+          //   {
+          //     header: this.headerSettings,
+          //     text: this.texts.filter((item) => item.text !== ""),
+          //     todo: this.todos,
+          //     stickers: this.stickers.filter(item => item.text !== "" || item.properties.items?.length > 0 || item.properties.type !== "" || item.properties.icon !== ""),
+          //   }
+          // );
           this.pendingChanges = false;
         } catch (ex) {
           this.saveStatus = "error";
@@ -680,6 +712,9 @@ export default {
     toggleTutorial() {
       this.showingTutorial = !this.showingTutorial;
     },
+    toggleCalendar() {
+      this.showingCalendar = !this.showingCalendar;
+    },
   },
   computed: {
     saveButton() {
@@ -687,7 +722,7 @@ export default {
       switch (this.saveStatus) {
         case "unsaved":
           buttonConfig = {
-            class: "warning text-white",
+            class: "warning",
             disabled: false,
             icon: "floppy-disk",
             text: "Unsaved changes",
@@ -695,15 +730,15 @@ export default {
           break;
         case "saving":
           buttonConfig = {
-            class: "light text-white",
+            class: "secondary",
             disabled: true,
-            icon: "spinner",
+            icon: "spinner fa-spin",
             text: "Saving",
           };
           break;
         case "saved":
           buttonConfig = {
-            class: "primary text-white",
+            class: "primary",
             disabled: true,
             icon: "check",
             text: "Saved",
@@ -711,7 +746,7 @@ export default {
           break;
         case "error":
           buttonConfig = {
-            class: "danger text-white",
+            class: "danger",
             disabled: true,
             icon: "exclamation",
             text: "Error saving",

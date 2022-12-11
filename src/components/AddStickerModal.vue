@@ -1,5 +1,5 @@
 <template>
-  <base-modal :open="open" @close="hideModal">
+  <base-modal :open="props !== null" @close="hideModal">
     <div class="h-100 overflow-auto">
     <!-- ADD STICKER -->
     <div class="row mx-0">
@@ -54,7 +54,7 @@
                         :name="pattern.id"
                         @click="
                           (colors) =>
-                            addSticker(pattern.id, colors, { width: 290/(pattern.ratio || 5/3), height: 290, ...(pattern.ratio && {ratio: pattern.ratio}) })
+                            addSticker(pattern.id, colors, { w: props.dim.h/(pattern.ratio || props.dim.h/props.dim.w), h: props.dim.h, ...(pattern.ratio && {r: pattern.ratio}) })
                         "
                       ></svg-sticker>
                 </div>
@@ -73,7 +73,7 @@
                     font-family: 'Noto Color Emoji';
                   `"
                           @click="
-                            addIcon(icon, [], { width: 100, height: 100, ratio: 1 })
+                            addIcon(icon, [], { w: 100, h: 100, r: 1 })
                           "
                 ></div>
               </div>
@@ -96,19 +96,14 @@ export default {
   components: {
     SvgSticker,
   },
-  props: ["open"],
+  props: ["props"],
   emits: ["close", "addText", "addToDo", "addSticker"],
   data() {
     return {
       patterns: [],
-      categories: [] // ["26BD", "1F37F", "1F95E", "1F6D2"]
+      categories: []
     };
   },
-  // computed: {
-  //   unicodeIcons(){
-  //     return this.icons.map(icon => `&#x${icon};`)
-  //   }
-  // },
   methods: {
     addText() {
       this.$emit("addText");
@@ -116,13 +111,13 @@ export default {
     addToDo() {
       this.$emit("addToDo");
     },
-    addSticker(type, colors, dimensions) {
+    addSticker(type, colors, dim) {
       // https://stackoverflow.com/questions/44149294/in-vue-js-how-can-i-emit-multiple-value-from-child-to-parent-while-parents-v-o
-      this.$emit("addSticker", { type, colors, dimensions });
+      this.$emit("addSticker", { type, colors, dim });
     },
-    addIcon(icon, colors, dimensions) {
+    addIcon(icon, colors, dim) {
       // https://stackoverflow.com/questions/44149294/in-vue-js-how-can-i-emit-multiple-value-from-child-to-parent-while-parents-v-o
-      this.$emit("addSticker", { icon, colors, dimensions });
+      this.$emit("addSticker", { icon, colors, dim });
     },
     hideModal() {
       this.$emit("close");

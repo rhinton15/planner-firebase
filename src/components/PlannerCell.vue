@@ -24,24 +24,12 @@
         {{ text }}
       </div>
     </div>
-
-    <!-- <add-sticker-modal
-      :open="isModalOpen"
-      @close="hideModal"
-      @addText="addText"
-      @addToDo="addToDo"
-      @addSticker="addSticker"
-    ></add-sticker-modal> -->
   </div>
 </template>
 
 <script>
-// import AddStickerModal from "./AddStickerModal.vue";
-
 export default {
-  // components: { AddStickerModal },
   props: ["date", "row", "col", "disabled", "width", "height", "text"],
-  // emits: ["addText", "addToDo", "addSticker"],
   emits: ["showModal"],
   data() {
     return {
@@ -55,31 +43,14 @@ export default {
   },
   methods: {
     showModal() {
-      this.$emit("showModal", { top: this.offsetTop, left: this.offsetLeft });
-      // if (!this.disabled) {
-      //   this.isModalOpen = true;
-      // }
+      this.$emit("showModal", {
+        pos: { y: this.offsetTop, x: this.offsetLeft },
+        dim: {
+          w: this.width,
+          h: this.height,
+        },
+      });
     },
-    // hideModal() {
-    //   this.isModalOpen = false;
-    // },
-    // addText() {
-    //   this.$emit("addText", { top: this.offsetTop, left: this.offsetLeft });
-    //   this.hideModal();
-    // },
-    // addToDo() {
-    //   this.$emit("addToDo", { top: this.offsetTop, left: this.offsetLeft });
-    //   this.hideModal();
-    // },
-    // addSticker(properties) {
-    //   this.$emit("addSticker", {
-    //     type: properties.type,
-    //     colors: properties.colors,
-    //     position: { top: this.offsetTop, left: this.offsetLeft },
-    //     dimensions: properties.dimensions,
-    //   });
-    //   this.hideModal();
-    // },
   },
   mounted() {
     var cell1 = document.getElementById("1-1");

@@ -7,7 +7,7 @@
         fontWeight: 400,
         fontSize: modelValue.font.size + 'px !important',
         resize: 'none',
-        width: modelValue.dimensions.width + 'px',
+        width: modelValue.dim.w + 'px',
         height: '100%',
       }"
       :colors="modelValue.colors"
@@ -40,10 +40,7 @@
         fontWeight: 400,
         fontSize: modelValue.font.size + 'px !important',
         resize: 'none',
-        width:
-          modelValue.dimensions.width -
-          (parseFloat(modelValue.font.size) + 7) +
-          'px',
+        width: modelValue.dim.w - (parseFloat(modelValue.font.size) + 7) + 'px',
         height: '100%',
         paddingLeft: '3px',
         marginLeft: parseFloat(modelValue.font.size) + 7 + 'px',
@@ -61,6 +58,8 @@
 </template>
 
 <script>
+import $ from "jquery";
+
 export default {
   props: ["modelValue"],
   emit: ["update:modelValue"],
@@ -73,6 +72,11 @@ export default {
     },
   },
   methods: {
+    click() {
+      console.log("CLICK");
+      $(this.$refs.listInput).click();
+      $(this.$refs.listInput).focus();
+    },
     toggleChecked(item) {
       item.done = !item.done;
       this.updateModelValue({ items: this.modelValue.items });
@@ -145,9 +149,9 @@ export default {
         items: element.value.split("\n").map((text, index) => {
           return { text, done: checked[index] || false };
         }),
-        dimensions: {
-          ...this.modelValue.dimensions,
-          height: element.scrollHeight,
+        dim: {
+          ...this.modelValue.dim,
+          h: element.scrollHeight,
         },
       });
       element.style.height = "100%";
