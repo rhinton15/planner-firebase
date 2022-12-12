@@ -36,8 +36,11 @@ import {
   faSpinner,
   faCheck,
   faExclamation,
-  faCircleInfo,
+  faCircleQuestion,
   faCalendarDays,
+  faTableColumns,
+  faTrash,
+  faPalette,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faCircleCheck, faCircle } from "@fortawesome/free-regular-svg-icons";
@@ -65,8 +68,11 @@ library.add(
   faExclamation,
   faCircleCheck,
   faCircle,
-  faCircleInfo,
-  faCalendarDays
+  faCircleQuestion,
+  faCalendarDays,
+  faTableColumns,
+  faTrash,
+  faPalette
 );
 
 // don't load app until firebase is initialized

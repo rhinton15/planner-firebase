@@ -7,19 +7,28 @@
       >
         <div class="d-flex flex-column">
           <div class="d-flex">
-            <button class="btn text-dark d-md-none" @click="toggleCalendar">
-              <font-awesome-icon icon="fa-solid fa-calendar-days" />
-            </button>
-            <button class="btn text-info" @click="toggleTutorial">
-              <font-awesome-icon icon="fa-solid fa-circle-info" />
+            <button class="btn" title="help" @click="toggleTutorial">
+              <font-awesome-icon icon="fa-solid fa-circle-question" />
             </button>
             <button
-              :class="`btn border-0 text-${saveButton.class}`"
+              :class="`btn border-0`"
               :disabled="saveButton.disabled"
               @click="saveChanges(currentWeek)"
               :title="saveButton.text"
             >
               <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
+            </button>
+            <button class="btn" title="load template" @click="toggleTemplate">
+              <font-awesome-icon icon="fa-solid fa-table-columns" />
+            </button>
+            <button class="btn" title="clear planner" @click="clearPlanner">
+              <font-awesome-icon icon="fa-solid fa-trash" />
+            </button>
+            <button class="btn" title="set colors" @click="toggleColors">
+              <font-awesome-icon icon="fa-solid fa-palette" />
+            </button>
+            <button class="btn text-dark d-md-none" @click="toggleCalendar">
+              <font-awesome-icon icon="fa-solid fa-calendar-days" />
             </button>
           </div>
           <div :class="`d-${showingCalendar ? 'block' : 'none'} d-md-block`">
@@ -172,7 +181,7 @@
 
                 <template #text>
                   <textarea
-                    v-if="sticker.text !== undefined"
+                    v-if="sticker.properties.text !== undefined"
                     :ref="'text-' + index"
                     :style="{
                       color: sticker.properties.font.color,
@@ -195,7 +204,7 @@
                     } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
                       sticker.properties.font.bold ? 'fw-bold' : ''
                     }`"
-                    v-model="sticker.text"
+                    v-model="sticker.properties.text"
                     @input="auto_grow($event.target, sticker)"
                   ></textarea>
 
@@ -218,6 +227,19 @@
         class="w-100 h-100"
         style="object-fit: contain"
       />
+    </base-modal>
+
+    <base-modal :open="showingTemplate" @close="toggleTemplate">
+      <calendar-select
+        :modelValue="currentWeek"
+        @update:modelValue="loadTemplate"
+      ></calendar-select>
+    </base-modal>
+
+    <base-modal :open="showingColors" @close="toggleColors">
+      <div v-for="color in allColors" :key="color" :style="{ color: color }">
+        {{ color }}
+      </div>
     </base-modal>
 
     <add-sticker-modal
@@ -256,7 +278,7 @@ import html2canvas from "html2canvas";
 import PinchZoom from "pinch-zoom-js";
 
 import { auth, db } from "../firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 
 import $ from "jquery";
 
@@ -302,6 +324,8 @@ export default {
       },
       editingHeader: false,
       showingTutorial: false,
+      showingTemplate: false,
+      showingColors: false,
       saveStatus: "saved",
       modalProps: null,
       focusedSticker: null,
@@ -454,8 +478,8 @@ export default {
     },
     addText() {
       let newLength = this.stickers.push({
-        text: "",
         properties: {
+          text: "",
           pos: this.modalProps.pos,
           opacity: 1,
           dim: {
@@ -601,6 +625,13 @@ export default {
       let el = this.$refs.planner;
       this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
     },
+    async loadTemplate(week) {
+      let existingStickers = this.stickers;
+      await this.loadPlanner(week);
+      this.stickers = this.stickers.concat(existingStickers);
+      await this.saveChanges(this.currentWeek);
+      this.toggleTemplate();
+    },
     async loadPlanner(week) {
       this.showingCalendar = false;
       this.focusedSticker = null;
@@ -637,10 +668,21 @@ export default {
           },
         };
 
+        this.texts = this.texts.map((text) => {
+          return { properties: { ...text.properties, text: text.text } };
+        });
         this.stickers = this.stickers.concat(this.texts).concat(this.todos);
         this.texts = null;
         this.todos = null;
         console.log(this.stickers);
+
+        this.stickers = this.stickers.map((sticker) => {
+          return { properties: sticker.properties || sticker };
+        });
+
+        // this.stickers = this.stickers.filter(
+        //   (sticker) => sticker.properties.type !== "\u26BD"
+        // );
 
         this.stickers.forEach((sticker) => {
           if (sticker.properties.dimensions) {
@@ -665,11 +707,6 @@ export default {
           }
         });
 
-        console.log(
-          this.stickers.map((sticker) => {
-            return { props: sticker.properties || sticker };
-          })
-        );
         // this.stickers.forEach((sticker) => {
         //   // sticker.properties.scale = sticker.properties.scale || 1;
         //   sticker.properties.rotation = sticker.properties.rotation || 0;
@@ -686,21 +723,49 @@ export default {
         });
       }
     },
+    async clearPlanner() {
+      if (confirm("Clear all stickers from planner?")) {
+        await deleteDoc(
+          doc(db, "users", auth.currentUser.uid, "planner", this.currentWeek)
+        );
+        await this.loadPlanner(this.currentWeek);
+      }
+    },
     async saveChanges(week) {
       if (this.pageLoaded) {
         this.saveStatus = "saving";
         try {
           console.log(week);
-          // await setDoc(
-          //   doc(db, "users", auth.currentUser.uid, "planner", week),
-          //   {
-          //     header: this.headerSettings,
-          //     text: this.texts.filter((item) => item.text !== ""),
-          //     todo: this.todos,
-          //     stickers: this.stickers.filter(item => item.text !== "" || item.properties.items?.length > 0 || item.properties.type !== "" || item.properties.icon !== ""),
-          //   }
-          // );
+          console.log(
+            this.stickers
+              .map((item) => item.properties)
+              .filter(
+                (item) =>
+                  item.text !== "" ||
+                  item.items?.length > 0 ||
+                  item.type !== "" ||
+                  item.icon !== ""
+              )
+          );
+          await setDoc(
+            doc(db, "users", auth.currentUser.uid, "planner", week),
+            {
+              header: this.headerSettings,
+              // text: this.texts.filter((item) => item.text !== ""),
+              // todo: this.todos,
+              stickers: this.stickers
+                .map((item) => item.properties)
+                .filter(
+                  (item) =>
+                    item.text !== "" ||
+                    item.items?.length > 0 ||
+                    item.type !== "" ||
+                    item.icon !== ""
+                ),
+            }
+          );
           this.pendingChanges = false;
+          this.saveStatus = "saved";
         } catch (ex) {
           this.saveStatus = "error";
         }
@@ -712,11 +777,27 @@ export default {
     toggleTutorial() {
       this.showingTutorial = !this.showingTutorial;
     },
+    toggleTemplate() {
+      this.showingTemplate = !this.showingTemplate;
+    },
+    toggleColors() {
+      this.showingColors = !this.showingColors;
+    },
     toggleCalendar() {
       this.showingCalendar = !this.showingCalendar;
     },
   },
   computed: {
+    allColors() {
+      return this.stickers
+        .map((sticker) => {
+          const colors = sticker.properties.colors || [];
+          const fontColor = sticker.properties.font?.color || [];
+          return colors.concat(fontColor);
+        })
+        .flat()
+        .filter((value, index, self) => self.indexOf(value) === index);
+    },
     saveButton() {
       let buttonConfig = {};
       switch (this.saveStatus) {
