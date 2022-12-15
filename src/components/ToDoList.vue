@@ -34,6 +34,7 @@
       </li>
     </ul>
     <textarea
+      v-if="!screenShot"
       :style="{
         color: modelValue.font.color,
         fontFamily: modelValue.font.family,
@@ -61,7 +62,7 @@
 import $ from "jquery";
 
 export default {
-  props: ["modelValue"],
+  props: ["modelValue", "screenShot"],
   emit: ["update:modelValue"],
   data() {
     return { selectionStart: null, selectionEnd: null };

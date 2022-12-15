@@ -112,10 +112,6 @@
                     >
                   </div>
                 </div>
-                <planner-header-settings
-                  v-if="editingHeader"
-                  v-model="headerSettings"
-                ></planner-header-settings>
               </div>
             </div>
             <div ref>
@@ -181,7 +177,7 @@
 
                 <template #text>
                   <textarea
-                    v-if="sticker.properties.text !== undefined"
+                    v-if="sticker.properties.text !== undefined && !screenShot"
                     :ref="'text-' + index"
                     :style="{
                       color: sticker.properties.font.color,
@@ -208,9 +204,39 @@
                     @input="auto_grow($event.target, sticker)"
                   ></textarea>
 
+                  <div
+                    v-else-if="
+                      sticker.properties.text !== undefined && screenShot
+                    "
+                    :style="{
+                      color: sticker.properties.font.color,
+                      fontFamily: sticker.properties.font.family,
+                      fontWeight: 400,
+                      fontSize: sticker.properties.font.size + 'px !important',
+                      resize: 'none',
+                      width:
+                        sticker.properties.dim.w -
+                        2 *
+                          (sticker.properties.border.width +
+                            sticker.properties.border.inset) *
+                          sticker.properties.border.on +
+                        'px',
+                      height: '100%',
+                    }"
+                    :colors="sticker.properties.colors"
+                    :class="`text-${
+                      sticker.properties.align
+                    } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
+                      sticker.properties.font.bold ? 'fw-bold' : ''
+                    }`"
+                  >
+                    {{ sticker.properties.text }}
+                  </div>
+
                   <to-do-list
                     v-else-if="sticker.properties.items"
                     v-model="sticker.properties"
+                    :screenShot="screenShot"
                     :ref="'text-' + index"
                   ></to-do-list>
                 </template>
@@ -234,6 +260,10 @@
         :modelValue="currentWeek"
         @update:modelValue="loadTemplate"
       ></calendar-select>
+      <button class="btn btn-outline-primary" @click="saveTemplate">
+        Share Template
+      </button>
+      <img :src="output" style="width: 250px" />
     </base-modal>
 
     <base-modal :open="showingColors" @close="toggleColors">
@@ -249,6 +279,11 @@
       @addToDo="addToDo"
       @addSticker="addSticker"
     ></add-sticker-modal>
+
+    <planner-header-settings
+      v-if="editingHeader"
+      v-model="headerSettings"
+    ></planner-header-settings>
 
     <sticker-properties
       v-if="focusedSticker != null"
@@ -277,8 +312,9 @@ import StickerProperties from "../components/StickerProperties.vue";
 import html2canvas from "html2canvas";
 import PinchZoom from "pinch-zoom-js";
 
-import { auth, db } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { ref, uploadBytes } from "firebase/storage";
 
 import $ from "jquery";
 
@@ -339,6 +375,7 @@ export default {
         "Saturday",
         "Sunday",
       ],
+      screenShot: false,
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -621,9 +658,32 @@ export default {
         element.style.height = "100%";
       });
     },
-    async createPng() {
+    async saveTemplate() {
       let el = this.$refs.planner;
-      this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
+      this.screenShot = true;
+      this.$nextTick(async () => {
+        this.output = (await html2canvas(el)).toDataURL("image/jpeg");
+
+        const storageRef = ref(storage, `templates/${"test"}.jpeg`);
+        // const storageRef = ref(storage, `stickers/${this.selectedFile.name}`);
+
+        const metadata = {
+          cacheControl: "max-age=604800",
+        };
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+        const canvas = await html2canvas(el);
+        canvas.toBlob(
+          async (blob) => {
+            await uploadBytes(storageRef, blob, metadata);
+          },
+          "image/jpeg",
+          0.1
+        );
+
+        this.screenShot = false;
+      });
+      // this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
     },
     async loadTemplate(week) {
       let existingStickers = this.stickers;
@@ -793,6 +853,7 @@ export default {
         .map((sticker) => {
           const colors = sticker.properties.colors || [];
           const fontColor = sticker.properties.font?.color || [];
+          // TODO: include border color
           return colors.concat(fontColor);
         })
         .flat()

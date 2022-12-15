@@ -60,7 +60,7 @@
                 </div>
               </div>
               <div v-for="category in categories" :key="category">
-                <h1>{{ category.name }}</h1>
+                <h3>{{ category.name }}</h3>
               <div class="d-flex flex-wrap">
                 <div
                 v-for="icon in category.icons"
@@ -138,9 +138,101 @@ const icons = [];
       icons.push({ code: doc.id, categories: doc.data().categories });
     });
 
-    this.categories = icons.map(icon => icon.categories).flat()
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .map(category => { return { name: category, icons: icons.filter(icon => icon.categories.includes(category)).map(icon => icon.code) } });
+    const categoryList = [
+      { 
+        label: "Food", 
+        categories: [
+          "fruit",
+          "vegetable",
+          "breakfast",
+          "food",
+          "dessert",
+          "meal",
+          "drink"
+        ] 
+      },
+      {
+        label: "Animals", 
+        categories: ["animal"]
+      },
+      {
+        label: "Plants", 
+        categories: ["plant", "flower"]
+      },
+      {
+        label: "Chores", 
+        categories: ["chore"]
+      },
+      {
+        label: "Appointments", 
+        categories: ["doctor"]
+      },
+      {
+        label: "Sports & Hobbies", 
+        categories: ["sport", "hobby"]
+      },
+      {
+        label: "Travel", 
+        categories: ["travel", "beach"]
+      },
+      {
+        label: "Entertainment", 
+        categories: ["entertain"]
+      },
+      {
+        label: "Music", 
+        categories: ["music", "instrument"]
+      },
+      {
+        label: "Events", 
+        categories: ["event"]
+      },
+      {
+        label: "Clothing", 
+        categories: ["clothing"]
+      },
+      {
+        label: "School", 
+        categories: ["school"]
+      },
+      {
+        label: "Work", 
+        categories: ["work", "money"]
+      },
+      {
+        label: "Weather", 
+        categories: ["weather"]
+      },
+      {
+        label: "Hearts", 
+        categories: ["heart"]
+      },
+      {
+        label: "Transportation", 
+        categories: ["transport"]
+      },
+      {
+        label: "Buildings", 
+        categories: ["building"]
+      },
+      {
+        label: "Clocks", 
+        categories: ["time"]
+      },
+    ];
+
+    this.categories = categoryList
+      .map(group => { 
+        return { 
+          name: group.label, 
+          icons: group.categories
+            .map(category => icons.filter(icon => icon.categories.includes(category)).map(icon => icon.code))
+            .flat()
+        } 
+      });
+      // icons.map(icon => icon.categories).flat()
+      // .filter((value, index, self) => self.indexOf(value) === index)
+      // .map(category => { return { name: category, icons: icons.filter(icon => icon.categories.includes(category)).map(icon => icon.code) } });
   }
 };
 </script>
