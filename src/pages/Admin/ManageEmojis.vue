@@ -31,19 +31,43 @@
       class="d-flex flex-wrap"
       v-if="mode === 'select' || currentCategory !== ''"
     >
+      <!-- <div v-for="(emoji, code) in emojiObj" :key="code">
+        <div v-if="!emoji.categories">
+          {{ code }}
+        </div>
+      </div> -->
       <button
         :class="`m-1 btn btn-${
-          (mode === 'select' && emoji.selected) ||
-          (mode === 'categorize' && emoji.categories.includes(currentCategory))
+          (mode === 'select' && emojiObj.hasOwnProperty(code)) ||
+          (mode === 'categorize' && emojiObj[code].includes(currentCategory))
             ? ''
             : 'outline-'
         }secondary`"
-        v-for="emoji in displayEmojis"
-        :key="emoji.code"
-        v-html="emoji.code"
+        v-for="code in displayEmojis"
+        :key="code"
+        v-html="code"
         style="font-family: Noto Color Emoji; font-size: 50px"
-        @click="toggleSelection(emoji)"
+        @click="toggleSelection(code)"
       ></button>
+      <!-- <button
+        :class="`m-1 btn btn-${
+          (mode === 'select' && emoji.hasOwnProperty(code)) ||
+          (mode === 'categorize' && emoji.categories?.includes(currentCategory))
+            ? ''
+            : 'outline-'
+        }secondary`"
+        v-for="[code, emoji] in Object.entries(emojiObj).filter(
+          (emoji) =>
+            mode === 'select' ||
+            (emoji[1].selected &&
+              (emoji[1].categories?.includes(this.currentCategory) ||
+                emoji[1].categories?.length === 0))
+        )"
+        :key="code"
+        v-html="code"
+        style="font-family: Noto Color Emoji; font-size: 50px"
+        @click="toggleSelection(code)"
+      ></button> -->
     </div>
   </div>
   <!-- <h1>EMOJIS!!</h1>
@@ -68,17 +92,29 @@
 
 <script>
 import { db } from "../../firebase";
-import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import {
+  // collection,
+  getDoc,
+  // getDocs,
+  doc,
+  // setDoc,
+  updateDoc,
+  deleteField,
+} from "firebase/firestore";
 // import { doc, setDoc } from "firebase/firestore";
 // import { auth, db } from "../firebase";
 // import { doc, getDoc, setDoc } from "firebase/firestore";
 // import json from "../../../emojis.json";
+import json from "../../../icons.json";
 
 export default {
   data() {
     return {
       timer: null,
-      emojis: [],
+      emojis: json.map(
+        (icon) => icon.replaceAll("U+", "&#x").replaceAll(" ", ";") + ";"
+      ),
+      emojiObj: {},
       mode: "categorize",
       currentCategory: "",
       categories: [
@@ -124,22 +160,45 @@ export default {
     };
   },
   methods: {
-    async toggleSelection(emoji) {
+    async toggleSelection(code) {
+      let emoji = this.emojiObj[code];
       if (this.mode === "select") {
-        emoji.selected = !emoji.selected;
+        if (Object.prototype.hasOwnProperty.call(this.emojiObj, code)) {
+          console.log("delete");
+          emoji = deleteField();
+          delete this.emojiObj[code];
+        } else {
+          console.log("add " + code);
+          emoji = [];
+          this.emojiObj[code] = emoji;
+          console.log(this.emojiObj);
+        }
+        this.$forceUpdate();
       } else {
-        const index = emoji.categories.indexOf(this.currentCategory);
+        const index = emoji.indexOf(this.currentCategory);
         if (index > -1) {
           // only splice array when item is found
-          emoji.categories.splice(index, 1); // 2nd parameter means remove one item only
+          emoji.splice(index, 1); // 2nd parameter means remove one item only
+          // emoji.categories.splice(index, 1); // 2nd parameter means remove one item only
+          // if(emoji.categories.length === 0){
+          //   delete emoji.categories; // remove property if empty
+          // }
         } else {
-          emoji.categories.push(this.currentCategory);
+          // if(emoji.categories === undefined){
+          //   emoji.categories = [this.currentCategory];
+          // } else {
+          // emoji.categories.push(this.currentCategory);
+          // }
+          emoji.push(this.currentCategory);
         }
       }
 
       //   console.log(emoji);
-      let { code, ...rest } = emoji;
-      await setDoc(doc(db, "icons", code), rest);
+      // let { code, ...rest } = emoji;
+      // await setDoc(doc(db, "icons", code), rest);
+      let newValue = {};
+      newValue[code] = emoji;
+      await updateDoc(doc(db, "iconsnew", "doc"), newValue);
       //   await setDoc(doc(db, "icons", emoji.code), emoji);
     },
     addCategory(category) {
@@ -151,14 +210,15 @@ export default {
   },
   computed: {
     displayEmojis() {
-      if (this.mode === "selected") {
+      // console.log("displayemojis");
+      if (this.mode === "select") {
+        // console.log(this.emojis);
         return this.emojis;
       } else {
-        return this.emojis.filter(
-          (emoji) =>
-            emoji.selected &&
-            (emoji.categories.includes(this.currentCategory) ||
-              emoji.categories.length === 0)
+        return Object.keys(this.emojiObj).filter(
+          (code) =>
+            this.emojiObj[code].includes(this.currentCategory) ||
+            this.emojiObj[code].length === 0
         );
       }
     },
@@ -173,20 +233,42 @@ export default {
     //     };
     //   });
 
-    const querySnapshot = await getDocs(collection(db, "icons"));
-    querySnapshot.forEach((doc) => {
-      this.emojis.push({ ...doc.data(), code: doc.id });
+    // const emojiList = [];
+    // const querySnapshot = await getDocs(collection(db, "icons"));
+    // querySnapshot.forEach((doc) => {
+    //   emojiList.push({ ...doc.data(), code: doc.id });
 
-      //   let emoji = this.emojis.at(-1);
-      //   if (emoji.categories === undefined) {
-      //     console.log(emoji.code);
-      //     emoji.categories = [];
-      //     let { code, ...rest } = emoji;
-      //     console.log(code);
-      //     console.log(rest);
-      //     await setDoc(doc(db, "icons", code), rest);
-      //   }
-    });
+    //   //   let emoji = this.emojis.at(-1);
+    //   //   if (emoji.categories === undefined) {
+    //   //     console.log(emoji.code);
+    //   //     emoji.categories = [];
+    //   //     let { code, ...rest } = emoji;
+    //   //     console.log(code);
+    //   //     console.log(rest);
+    //   //     await setDoc(doc(db, "icons", code), rest);
+    //   //   }
+    // });
+
+    // // console.log(this.emojis.length);
+
+    // let emojisNew = {};
+    // emojiList.forEach((emoji) => {
+    //   if (emoji.selected) {
+    //     emojisNew[emoji.code] = emoji.categories;
+    //   }
+    // });
+
+    // console.log(emojisNew);
+    const docRef = doc(db, "iconsnew", "doc");
+    // await setDoc(docRef, emojisNew);
+
+    // await updateDoc(docRef, {
+    //   "&#x00A9;": { desc: "copyright", selected: true },
+    // });
+
+    var emojiDoc = await getDoc(docRef);
+    this.emojiObj = emojiDoc.data();
+    // console.log(docu.data());
 
     // console.log(this.emojis.find((emoji) => emoji.code === "&#x00A9;"));
     //   .map((icon) => {

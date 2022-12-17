@@ -256,14 +256,24 @@
     </base-modal>
 
     <base-modal :open="showingTemplate" @close="toggleTemplate">
-      <calendar-select
+      <!-- <calendar-select
         :modelValue="currentWeek"
         @update:modelValue="loadTemplate"
-      ></calendar-select>
+      ></calendar-select> -->
       <button class="btn btn-outline-primary" @click="saveTemplate">
         Share Template
       </button>
-      <img :src="output" style="width: 250px" />
+      <!-- <img :src="output" style="width: 250px" /> -->
+      <div class="d-flex flex-wrap">
+        <button
+          class="btn btn-outline-light m-2"
+          v-for="template in templates"
+          :key="template.id"
+          @click="loadTemplate(template)"
+        >
+          <img :src="template.url" style="width: 200px" />
+        </button>
+      </div>
     </base-modal>
 
     <base-modal :open="showingColors" @close="toggleColors">
@@ -313,8 +323,21 @@ import html2canvas from "html2canvas";
 import PinchZoom from "pinch-zoom-js";
 
 import { auth, db, storage } from "../firebase";
-import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
+import {
+  doc,
+  collection,
+  getDoc,
+  addDoc,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import {
+  getStorage,
+  getDownloadURL,
+  ref,
+  listAll,
+  uploadBytes,
+} from "firebase/storage";
 
 import $ from "jquery";
 
@@ -376,6 +399,7 @@ export default {
         "Sunday",
       ],
       screenShot: false,
+      templates: [],
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -399,6 +423,8 @@ export default {
     await setDoc(doc(db, "users", auth.currentUser.uid), {
       new: false,
     });
+
+    this.loadTemplates();
   },
   async mounted() {
     const el = document.querySelector("div.pinch-zoom");
@@ -659,12 +685,20 @@ export default {
       });
     },
     async saveTemplate() {
+      let docRef = await addDoc(
+        collection(db, "users", auth.currentUser.uid, "templates"),
+        this.plannerDocument
+      );
+      console.log(docRef.id);
       let el = this.$refs.planner;
       this.screenShot = true;
       this.$nextTick(async () => {
         this.output = (await html2canvas(el)).toDataURL("image/jpeg");
 
-        const storageRef = ref(storage, `templates/${"test"}.jpeg`);
+        const storageRef = ref(
+          storage,
+          `templates/${auth.currentUser.uid}/${docRef.id}.jpeg`
+        );
         // const storageRef = ref(storage, `stickers/${this.selectedFile.name}`);
 
         const metadata = {
@@ -676,23 +710,80 @@ export default {
         canvas.toBlob(
           async (blob) => {
             await uploadBytes(storageRef, blob, metadata);
+            const url = await getDownloadURL(storageRef);
+            this.templates.unshift({ id: docRef.id, url });
           },
           "image/jpeg",
           0.1
         );
 
         this.screenShot = false;
+        this.toggleTemplate();
       });
       // this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
     },
-    async loadTemplate(week) {
+    async loadTemplates() {
+      const storage = getStorage();
+
+      // Create a reference under which you want to list
+      const listRef = ref(storage, "templates");
+
+      let { prefixes } = await listAll(listRef);
+      prefixes.forEach(async (prefix) => {
+        let { items } = await listAll(prefix);
+        items.forEach(async (item) => {
+          this.templates.push({
+            id: item.name.replace(/\..*/, ""),
+            uid: prefix.name,
+            url: await getDownloadURL(item),
+          });
+        });
+      });
+
+      // // Find all the prefixes and items.
+      // let { items } = await listAll(listRef);
+      // // items.forEach((item) => console.log(item));
+      // // items.forEach(async (item) => console.log(await getDownloadURL(item)));
+      // this.templates = await Promise.all(
+      //   items.map(async (item) => {
+      //     return {
+      //       id: item.name.replace(/\..*/, ""),
+      //       url: await getDownloadURL(item),
+      //     };
+      //   })
+      // );
+      console.log(this.templates);
+      // .then((res) => {
+      //   res.prefixes.forEach((folderRef) => {
+      //     // All the prefixes under listRef.
+      //     // You may call listAll() recursively on them.
+      //     console.log(folderRef);
+      //   });
+      //   res.items.forEach((itemRef) => {
+      //     // All the items under listRef.
+      //     console.log(itemRef.name);
+      //   });
+      // })
+      // .catch((error) => {
+      //   // Uh-oh, an error occurred!
+      //   console.log(error);
+      // });
+    },
+    async loadTemplate(template) {
       let existingStickers = this.stickers;
-      await this.loadPlanner(week);
+      await this.loadPlanner(template.id, template.uid, "templates");
       this.stickers = this.stickers.concat(existingStickers);
       await this.saveChanges(this.currentWeek);
       this.toggleTemplate();
     },
-    async loadPlanner(week) {
+    // async loadTemplate(week) {
+    //   let existingStickers = this.stickers;
+    //   await this.loadPlanner(week);
+    //   this.stickers = this.stickers.concat(existingStickers);
+    //   await this.saveChanges(this.currentWeek);
+    //   this.toggleTemplate();
+    // },
+    async loadPlanner(id, uid = auth.currentUser.uid, collection = "planner") {
       this.showingCalendar = false;
       this.focusedSticker = null;
       this.pageLoaded = false;
@@ -700,8 +791,8 @@ export default {
       this.todos = null;
       this.stickers = null;
 
-      if (week) {
-        const docRef = doc(db, "users", auth.currentUser.uid, "planner", week);
+      if (id) {
+        const docRef = doc(db, "users", uid, collection, id);
         const docSnap = await getDoc(docRef);
 
         var res = docSnap.data();
@@ -795,34 +886,9 @@ export default {
       if (this.pageLoaded) {
         this.saveStatus = "saving";
         try {
-          console.log(week);
-          console.log(
-            this.stickers
-              .map((item) => item.properties)
-              .filter(
-                (item) =>
-                  item.text !== "" ||
-                  item.items?.length > 0 ||
-                  item.type !== "" ||
-                  item.icon !== ""
-              )
-          );
           await setDoc(
             doc(db, "users", auth.currentUser.uid, "planner", week),
-            {
-              header: this.headerSettings,
-              // text: this.texts.filter((item) => item.text !== ""),
-              // todo: this.todos,
-              stickers: this.stickers
-                .map((item) => item.properties)
-                .filter(
-                  (item) =>
-                    item.text !== "" ||
-                    item.items?.length > 0 ||
-                    item.type !== "" ||
-                    item.icon !== ""
-                ),
-            }
+            this.plannerDocument
           );
           this.pendingChanges = false;
           this.saveStatus = "saved";
@@ -848,6 +914,20 @@ export default {
     },
   },
   computed: {
+    plannerDocument() {
+      return {
+        header: this.headerSettings,
+        stickers: this.stickers
+          .map((item) => item.properties)
+          .filter(
+            (item) =>
+              item.text !== "" ||
+              item.items?.length > 0 ||
+              item.type !== "" ||
+              item.icon !== ""
+          ),
+      };
+    },
     allColors() {
       return this.stickers
         .map((sticker) => {

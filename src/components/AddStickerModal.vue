@@ -90,7 +90,8 @@
 <script>
 import SvgSticker from "./SvgSticker.vue";
 import { db } from "../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, getDoc, doc, getDocs } from "firebase/firestore";
+// import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default {
   components: {
@@ -130,13 +131,19 @@ querySnapshot.forEach((doc) => {
 });
   },
   async mounted(){
-    const q = query(collection(db, "icons"), where("selected", "==", true));
+    var emojiDoc = await getDoc(doc(db, "iconsnew", "doc"));
+    const emojiObj = emojiDoc.data();
 
 const icons = [];
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      icons.push({ code: doc.id, categories: doc.data().categories });
-    });
+    Object.entries(emojiObj).forEach(([code, categories]) => icons.push({code, categories}));
+//     const q = query(collection(db, "icons"), where("selected", "==", true));
+
+// const icons = [];
+
+//     const querySnapshot = await getDocs(q);
+//     querySnapshot.forEach((doc) => {
+//       icons.push({ code: doc.id, categories: doc.data().categories });
+//     });
 
     const categoryList = [
       { 
