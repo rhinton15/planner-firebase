@@ -324,7 +324,6 @@ export default {
       if (!this.isFocused) {
         return;
       }
-      // console.log("mousemove");
       e.stopPropagation();
 
       // var updateValue = debounce(() => {
@@ -363,12 +362,6 @@ export default {
           pos: { y: newY, x: newX },
         });
       } else if (resizing) {
-        // var element = document.getElementById("pinch-zoom");
-        // var scale = element.getBoundingClientRect().width / element.offsetWidth;
-        // console.log(scale);
-        // newWidth = newWidth / scale;
-        // newHeight = newHeight / scale;
-
         var newWidth =
           startShift.dim.w +
           ((ePos.x / scale) * Math.cos(this.rotationRadians) +

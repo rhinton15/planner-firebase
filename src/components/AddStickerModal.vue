@@ -90,8 +90,7 @@
 <script>
 import SvgSticker from "./SvgSticker.vue";
 import { db } from "../firebase";
-import { collection, getDoc, doc, getDocs } from "firebase/firestore";
-// import { collection, query, where, getDocs } from "firebase/firestore";
+import { getDoc, doc } from "firebase/firestore";
 
 export default {
   components: {
@@ -125,25 +124,17 @@ export default {
     },
   },
   async beforeCreate() {
-    const querySnapshot = await getDocs(collection(db, "stickers"));
-querySnapshot.forEach((doc) => {
-  this.patterns.push({ id: doc.id, ...doc.data()});
-});
+    var svgDoc = await getDoc(doc(db, "stickers", "svg"));
+    Object.entries(svgDoc.data()).forEach(([id, props]) => this.patterns.push({id, ...props}));
+    this.patterns.sort((a,b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   },
   async mounted(){
-    var emojiDoc = await getDoc(doc(db, "iconsnew", "doc"));
+    var emojiDoc = await getDoc(doc(db, "stickers", "icon"));
     const emojiObj = emojiDoc.data();
 
 const icons = [];
     Object.entries(emojiObj).forEach(([code, categories]) => icons.push({code, categories}));
-//     const q = query(collection(db, "icons"), where("selected", "==", true));
-
-// const icons = [];
-
-//     const querySnapshot = await getDocs(q);
-//     querySnapshot.forEach((doc) => {
-//       icons.push({ code: doc.id, categories: doc.data().categories });
-//     });
+  icons.sort((a,b) => a.code < b.code ? -1 : a.code > b.code ? 1 : 0);
 
     const categoryList = [
       { 
@@ -237,9 +228,6 @@ const icons = [];
             .flat()
         } 
       });
-      // icons.map(icon => icon.categories).flat()
-      // .filter((value, index, self) => self.indexOf(value) === index)
-      // .map(category => { return { name: category, icons: icons.filter(icon => icon.categories.includes(category)).map(icon => icon.code) } });
   }
 };
 </script>

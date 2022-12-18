@@ -433,7 +433,6 @@ export default {
 
       onDoubleTap: (pinch, event) => {
         event.preventDefault();
-        console.log(pinch, event);
       },
     });
 
@@ -568,11 +567,8 @@ export default {
       });
       // https://stackoverflow.com/questions/59749325/vue-set-focus-to-dynamic-input-box
       this.$nextTick(() => {
-        console.log($(this.$refs[`text-${newLength - 1}`][0]));
         this.$refs[`text-${newLength - 1}`][0].focus();
         this.$refs[`text-${newLength - 1}`][0].click();
-        // $("#text-" + (this.texts.length - 1)).focus();
-        // $("#text-" + (this.texts.length - 1)).click();
       });
       this.hideModal();
     },
@@ -628,7 +624,6 @@ export default {
           ...sticker,
         },
       });
-      console.log(this.stickers);
       this.hideModal();
     },
     moveToFront(index) {
@@ -689,7 +684,6 @@ export default {
         collection(db, "users", auth.currentUser.uid, "templates"),
         this.plannerDocument
       );
-      console.log(docRef.id);
       let el = this.$refs.planner;
       this.screenShot = true;
       this.$nextTick(async () => {
@@ -739,35 +733,6 @@ export default {
           });
         });
       });
-
-      // // Find all the prefixes and items.
-      // let { items } = await listAll(listRef);
-      // // items.forEach((item) => console.log(item));
-      // // items.forEach(async (item) => console.log(await getDownloadURL(item)));
-      // this.templates = await Promise.all(
-      //   items.map(async (item) => {
-      //     return {
-      //       id: item.name.replace(/\..*/, ""),
-      //       url: await getDownloadURL(item),
-      //     };
-      //   })
-      // );
-      console.log(this.templates);
-      // .then((res) => {
-      //   res.prefixes.forEach((folderRef) => {
-      //     // All the prefixes under listRef.
-      //     // You may call listAll() recursively on them.
-      //     console.log(folderRef);
-      //   });
-      //   res.items.forEach((itemRef) => {
-      //     // All the items under listRef.
-      //     console.log(itemRef.name);
-      //   });
-      // })
-      // .catch((error) => {
-      //   // Uh-oh, an error occurred!
-      //   console.log(error);
-      // });
     },
     async loadTemplate(template) {
       let existingStickers = this.stickers;
@@ -776,13 +741,6 @@ export default {
       await this.saveChanges(this.currentWeek);
       this.toggleTemplate();
     },
-    // async loadTemplate(week) {
-    //   let existingStickers = this.stickers;
-    //   await this.loadPlanner(week);
-    //   this.stickers = this.stickers.concat(existingStickers);
-    //   await this.saveChanges(this.currentWeek);
-    //   this.toggleTemplate();
-    // },
     async loadPlanner(id, uid = auth.currentUser.uid, collection = "planner") {
       this.showingCalendar = false;
       this.focusedSticker = null;
@@ -798,8 +756,6 @@ export default {
         var res = docSnap.data();
 
         this.pageLoaded = true;
-
-        console.log(res);
 
         this.texts = res?.text || [];
         this.todos = res?.todo || [];
@@ -825,7 +781,6 @@ export default {
         this.stickers = this.stickers.concat(this.texts).concat(this.todos);
         this.texts = null;
         this.todos = null;
-        console.log(this.stickers);
 
         this.stickers = this.stickers.map((sticker) => {
           return { properties: sticker.properties || sticker };
@@ -865,9 +820,6 @@ export default {
         //   delete sticker.properties.align;
         //   // delete sticker.rotation;
         // }); // assign default value
-
-        // this.focusedSticker = this.stickers[0];
-        // console.log(this.focusedSticker);
 
         this.$nextTick(() => {
           this.pendingChanges = false;

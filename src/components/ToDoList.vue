@@ -74,7 +74,6 @@ export default {
   },
   methods: {
     click() {
-      console.log("CLICK");
       $(this.$refs.listInput).click();
       $(this.$refs.listInput).focus();
     },

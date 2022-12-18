@@ -400,12 +400,10 @@ export default {
   watch: {
     modelValue() {
       this.colors = this.modelValue.colors || [];
-      // console.log("model value changed");
     },
   },
   // beforeUpdate() {
   //   this.colors = this.modelValue.colors || [];
-  //   console.log(this.colors);
   // },
   mounted() {
     this.colors = this.modelValue.colors || [];

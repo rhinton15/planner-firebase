@@ -134,7 +134,13 @@
 <script>
 import { ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  // getDocs,
+  // collection,
+  // setDoc,
+} from "firebase/firestore";
 
 export default {
   data() {
@@ -325,15 +331,20 @@ export default {
         metadata
       );
 
-      let stickerProps = {
-        tags: this.tags,
-      };
+      let stickerProps = {};
+      if (this.tags.length > 0) {
+        stickerProps.tags = this.tags;
+      }
 
       if (!this.isPattern) {
         stickerProps.ratio = this.dimensions.height / this.dimensions.width;
       }
 
-      await setDoc(doc(db, "stickers", this.fileName), stickerProps);
+      // await setDoc(doc(db, "stickers", this.fileName), stickerProps);
+
+      let newValue = {};
+      newValue[this.fileName] = stickerProps;
+      await updateDoc(doc(db, "stickers", "svg"), newValue);
     },
   },
 };
