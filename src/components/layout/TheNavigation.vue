@@ -118,28 +118,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-/* white text with white underline on hover/active */
-.underline {
-  background: transparent;
-  border-width: 0px;
-  /* border-top: 4px solid transparent; */
-  border-bottom: 3px solid transparent;
-  color: white;
-  display: inline-block;
-  /* padding: 0.1rem 0; */
-  padding: 0;
-  padding-bottom: 2px;
-  border-radius: 0px;
-}
-
-.underline:hover,
-.underline:active,
-.underline.router-link-active {
-  border-color: transparent;
-  background-color: transparent;
-  border-bottom: 3px solid white;
-  color: white;
-}
-</style>

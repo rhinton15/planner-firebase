@@ -18,7 +18,11 @@
             >
               <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
             </button>
-            <button class="btn" title="load template" @click="toggleTemplate">
+            <button
+              class="btn"
+              title="load template"
+              @click="setShowingTemplate('all')"
+            >
               <font-awesome-icon icon="fa-solid fa-table-columns" />
             </button>
             <button class="btn" title="clear planner" @click="clearPlanner">
@@ -255,24 +259,71 @@
       />
     </base-modal>
 
-    <base-modal :open="showingTemplate" @close="toggleTemplate">
+    <base-modal :open="showingTemplate" @close="setShowingTemplate(null)">
       <!-- <calendar-select
         :modelValue="currentWeek"
         @update:modelValue="loadTemplate"
       ></calendar-select> -->
-      <button class="btn btn-outline-primary" @click="saveTemplate">
-        Share Template
-      </button>
-      <!-- <img :src="output" style="width: 250px" /> -->
-      <div class="d-flex flex-wrap">
-        <button
-          class="btn btn-outline-light m-2"
-          v-for="template in templates"
-          :key="template.id"
-          @click="loadTemplate(template)"
-        >
-          <img :src="template.url" style="width: 200px" />
-        </button>
+      <div class="h-100 d-flex flex-column">
+        <ul class="nav justify-content-center">
+          <li class="nav-item m-2">
+            <button
+              :class="`underline underline-primary ${
+                showingTemplate === 'all' ? 'active' : ''
+              }`"
+              @click="setShowingTemplate('all')"
+            >
+              All
+            </button>
+          </li>
+          <li class="nav-item m-2">
+            <button
+              :class="`underline underline-primary ${
+                showingTemplate === 'mine' ? 'active' : ''
+              }`"
+              @click="setShowingTemplate('mine')"
+            >
+              Mine
+            </button>
+          </li>
+        </ul>
+        <div>
+          <button
+            class="btn btn-outline-primary m-1"
+            @click="saveTemplate(false)"
+          >
+            Save New Template
+          </button>
+          <button
+            v-if="templates.some((temp) => temp.id === templateId)"
+            class="btn btn-outline-primary m-1"
+            @click="saveTemplate(true)"
+          >
+            Update Existing Template
+          </button>
+          <!-- <img :src="output" style="width: 250px" /> -->
+        </div>
+        <div class="flex-fill overflow-auto">
+          <div class="d-flex flex-wrap">
+            <button
+              class="btn btn-outline-light m-2 position-relative"
+              v-for="template in templates.filter(
+                (temp) => showingTemplate === 'all' || temp.mine
+              )"
+              :key="template.id"
+              @click="loadTemplate(template)"
+            >
+              <button
+                v-if="template.mine"
+                class="btn text-dark position-absolute top-0 end-0"
+                @click.stop="deleteTemplate(template)"
+              >
+                <font-awesome-icon icon="fa-solid fa-trash" />
+              </button>
+              <img :src="template.url" style="width: 200px" />
+            </button>
+          </div>
+        </div>
       </div>
     </base-modal>
 
@@ -337,6 +388,7 @@ import {
   ref,
   listAll,
   uploadBytes,
+  deleteObject,
 } from "firebase/storage";
 
 import $ from "jquery";
@@ -679,21 +731,60 @@ export default {
         element.style.height = "100%";
       });
     },
-    async saveTemplate() {
-      let docRef = await addDoc(
-        collection(db, "users", auth.currentUser.uid, "templates"),
-        this.plannerDocument
-      );
+    async saveTemplate(overwrite) {
+      // let version = 1;
+      if (this.templateId && overwrite) {
+        // replace existing
+        await setDoc(
+          doc(db, "users", auth.currentUser.uid, "templates", this.templateId),
+          this.plannerDocument
+        );
+        this.templates.splice(
+          this.templates.findIndex((item) => item.id === this.templateId),
+          1
+        );
+
+        // const [existingTemplate] = this.templates.splice(
+        //   this.templates.findIndex((item) => item.id === this.templateId),
+        //   1
+        // );
+
+        // version = existingTemplate.version + 1;
+
+        // Delete the photo for previous version of template
+        // deleteObject(
+        //   ref(
+        //     storage,
+        //     `templates/${auth.currentUser.uid}/${this.templateId}_${
+        //       version - 1
+        //     }.jpeg`
+        //   )
+        // );
+      } else {
+        // add new
+        let docRef = await addDoc(
+          collection(db, "users", auth.currentUser.uid, "templates"),
+          this.plannerDocument
+        );
+        this.templateId = docRef.id;
+        await this.saveChanges(this.currentWeek);
+      }
+
       let el = this.$refs.planner;
       this.screenShot = true;
       this.$nextTick(async () => {
         this.output = (await html2canvas(el)).toDataURL("image/jpeg");
 
+        // const storageRef = ref(
+        //   storage,
+        //   `templates/${auth.currentUser.uid}/${this.templateId}_${
+        //     version - 1
+        //   }.jpeg`
+        // );
         const storageRef = ref(
           storage,
-          `templates/${auth.currentUser.uid}/${docRef.id}.jpeg`
+          `templates/${auth.currentUser.uid}/${this.templateId}.jpeg`
         );
-        // const storageRef = ref(storage, `stickers/${this.selectedFile.name}`);
 
         const metadata = {
           cacheControl: "max-age=604800",
@@ -705,16 +796,29 @@ export default {
           async (blob) => {
             await uploadBytes(storageRef, blob, metadata);
             const url = await getDownloadURL(storageRef);
-            this.templates.unshift({ id: docRef.id, url });
+            this.templates.unshift({ id: this.templateId, url });
+            // this.templates.unshift({ id: this.templateId, url, version });
           },
           "image/jpeg",
           0.1
         );
 
         this.screenShot = false;
-        this.toggleTemplate();
+        this.setShowingTemplate(null);
       });
       // this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
+    },
+    async deleteTemplate(template) {
+      if (confirm("Are you sure you want to delete this template?")) {
+        await deleteObject(
+          ref(storage, `templates/${template.uid}/${template.id}.jpeg`)
+        );
+
+        this.templates.splice(
+          this.templates.findIndex((temp) => temp.id === template.id),
+          1
+        );
+      }
     },
     async loadTemplates() {
       const storage = getStorage();
@@ -725,11 +829,17 @@ export default {
       let { prefixes } = await listAll(listRef);
       prefixes.forEach(async (prefix) => {
         let { items } = await listAll(prefix);
+        let mine = prefix.name === auth.currentUser.uid;
         items.forEach(async (item) => {
           this.templates.push({
-            id: item.name.replace(/\..*/, ""),
+            id: item.name.replace(/\..*$/, ""),
+            // id: item.name.replace(/_.*$/, ""),
+            // version: parseInt(
+            //   item.name.replace(/^.*_/, "").replace(/\..*$/, "")
+            // ),
             uid: prefix.name,
             url: await getDownloadURL(item),
+            mine,
           });
         });
       });
@@ -739,7 +849,7 @@ export default {
       await this.loadPlanner(template.id, template.uid, "templates");
       this.stickers = this.stickers.concat(existingStickers);
       await this.saveChanges(this.currentWeek);
-      this.toggleTemplate();
+      this.setShowingTemplate(null);
     },
     async loadPlanner(id, uid = auth.currentUser.uid, collection = "planner") {
       this.showingCalendar = false;
@@ -757,6 +867,7 @@ export default {
 
         this.pageLoaded = true;
 
+        this.templateId = res?.temp || null;
         this.texts = res?.text || [];
         this.todos = res?.todo || [];
         this.stickers = res?.stickers || [];
@@ -837,10 +948,16 @@ export default {
     async saveChanges(week) {
       if (this.pageLoaded) {
         this.saveStatus = "saving";
+
+        let newDoc = this.plannerDocument;
+        if (this.templateId) {
+          newDoc.temp = this.templateId;
+        }
+
         try {
           await setDoc(
             doc(db, "users", auth.currentUser.uid, "planner", week),
-            this.plannerDocument
+            newDoc
           );
           this.pendingChanges = false;
           this.saveStatus = "saved";
@@ -855,8 +972,8 @@ export default {
     toggleTutorial() {
       this.showingTutorial = !this.showingTutorial;
     },
-    toggleTemplate() {
-      this.showingTemplate = !this.showingTemplate;
+    setShowingTemplate(val) {
+      this.showingTemplate = val;
     },
     toggleColors() {
       this.showingColors = !this.showingColors;

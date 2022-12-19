@@ -76,6 +76,40 @@ li {
   box-shadow: none !important;
 }
 
+/* white text with white underline on hover/active */
+.underline {
+  background: transparent;
+  border-width: 0px;
+  border-bottom: 3px solid transparent;
+  color: white !important;
+  display: inline-block;
+  padding: 0;
+  padding-bottom: 2px;
+  border-radius: 0px;
+}
+
+.underline:hover,
+.underline:active,
+.underline.active,
+.underline.router-link-active {
+  border-color: transparent;
+  background-color: transparent;
+  border-bottom: 3px solid white !important;
+  color: white !important;
+}
+
+.underline-primary {
+  color: var(--bs-primary) !important;
+}
+
+.underline-primary:hover,
+.underline-primary:active,
+.underline-primary.active,
+.underline-primary.router-link-active {
+  border-bottom-color: var(--bs-primary) !important;
+  color: var(--bs-primary) !important;
+}
+
 @media print {
   #app {
     margin-top: 0px;
