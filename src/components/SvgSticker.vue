@@ -59,7 +59,7 @@ export default {
 
       svgText = svgText.replace(
         "<pattern",
-        `<pattern style='transform: scale(${2 ** this.scale})'`
+        `<pattern style='transform: scale(${2 ** (this.scale || 0)})'`
       );
 
       return svgText;

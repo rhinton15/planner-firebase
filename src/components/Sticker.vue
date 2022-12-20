@@ -7,10 +7,7 @@
         (this.isFocused && false ? 'border border-rounded' : '')
       "
       :style="
-        'transform: rotate(' +
-        this.modelValue.rotation -
-        this.modelValue.rotation +
-        'deg); top: ' +
+        'top: ' +
         (this.modelValue.pos.y + this.offsetTop) +
         'px; left: ' +
         (this.modelValue.pos.x + this.offsetLeft) +
@@ -29,7 +26,7 @@
         class="position-absolute"
         :style="
           'pointer-events: auto; transform: rotate(' +
-          this.modelValue.rotation +
+          (this.modelValue.rot || 0) +
           'deg); margin-top: ' +
           boundingBox.margins.top +
           'px; margin-left: ' +
@@ -40,8 +37,8 @@
         <div
           :style="
             (this.isFocused
-              ? `opacity: ${75 * modelValue.opacity}%;`
-              : `opacity: ${modelValue.opacity};`) +
+              ? `opacity: ${75 * (modelValue.op || 1)}%;`
+              : `opacity: ${modelValue.op || 1};`) +
             'width: ' +
             this.modelValue.dim.w +
             'px; height: ' +
@@ -129,10 +126,10 @@ export default {
   },
   computed: {
     trueRotation() {
-      return ((this.modelValue.rotation % 360) + 360) % 360;
+      return ((parseInt(this.modelValue.rot || 0) % 360) + 360) % 360;
     },
     rotationRadians() {
-      return (this.modelValue.rotation / 180) * Math.PI;
+      return (parseInt(this.modelValue.rot || 0) / 180) * Math.PI;
     },
     ratio() {
       let h = this.modelValue.dim.h;
@@ -175,7 +172,8 @@ export default {
       let angle = (Math.atan(dim.w / dim.h) * 180) / Math.PI;
 
       // https://stackoverflow.com/questions/4467539/javascript-modulo-gives-a-negative-result-for-negative-numbers
-      const rotationAngle = ((this.modelValue.rotation + 90) % 180) - 90;
+      const rotationAngle =
+        ((parseInt(this.modelValue.rot || 0) + 90) % 180) - 90;
 
       let dimensions = {
         width:
@@ -404,7 +402,8 @@ export default {
 
         let newPosition = this.modelValue.pos;
 
-        const rotation = ((this.modelValue.rotation % 360) + 360) % 360;
+        const rotation =
+          ((parseInt(this.modelValue.rot || 0) % 360) + 360) % 360;
         const rotationRad = ((rotation % 90) * Math.PI) / 180;
         const sinRotation = Math.sin(rotationRad);
         const cosRotation = Math.cos(rotationRad);

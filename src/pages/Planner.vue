@@ -5,6 +5,13 @@
         class="d-flex px-2 flex-column flex-md-row"
         style="height: calc(100vh - 200px)"
       >
+        <!-- <input
+          type="number"
+          step="0.01"
+          class="form-control"
+          :value="testNum"
+          @input="updateTestNum"
+        /> -->
         <div class="d-flex flex-column">
           <div class="d-flex">
             <button class="btn" title="help" @click="toggleTutorial">
@@ -346,6 +353,10 @@
       v-model="headerSettings"
     ></planner-header-settings>
 
+    <!-- v-model="focusedSticker.properties" -->
+    <!-- @update:modelValue="printNewVal" -->
+    <!-- @updateModelValue="printNewVal"
+      @test="printTest" -->
     <sticker-properties
       v-if="focusedSticker != null"
       :id="stickers.findIndex((sticker) => sticker === focusedSticker)"
@@ -407,6 +418,7 @@ export default {
   },
   data() {
     return {
+      testNum: 4,
       pageLoaded: false,
       timer: null,
       texts: [],
@@ -546,6 +558,16 @@ export default {
     },
   },
   methods: {
+    // printTest() {
+    //   console.log("test");
+    // },
+    // printNewVal(newVal) {
+    //   console.log(newVal);
+    //   console.log(this.focusedSticker);
+    // },
+    updateTestNum(val) {
+      console.log(val);
+    },
     showModal(props) {
       if (this.pageLoaded) {
         this.modalProps = props;
@@ -595,7 +617,6 @@ export default {
         properties: {
           text: "",
           pos: this.modalProps.pos,
-          opacity: 1,
           dim: {
             w: 174,
             h: 50,
@@ -606,7 +627,6 @@ export default {
             family: "Shadows Into Light Two",
             color: "#000000",
           },
-          rotation: 0,
           align: "center",
           border: {
             on: false,
@@ -630,7 +650,6 @@ export default {
           // text: "To Do 1\nTo Do 2\nTo Do 3",
           items: [],
           pos: this.modalProps.pos,
-          opacity: 1,
           dim: {
             w: 174,
             h: 50,
@@ -641,7 +660,6 @@ export default {
             family: "Waiting for the Sunrise",
             color: "#000000",
           },
-          rotation: 0,
           border: {
             on: false,
             inset: 5,
@@ -663,9 +681,7 @@ export default {
           // position: sticker.position,
           // colors: sticker.colors,
           pos: this.modalProps.pos,
-          opacity: 1,
           scale: 0,
-          rotation: 0,
           border: {
             on: false,
             inset: 5,
@@ -710,6 +726,10 @@ export default {
     },
     updateFocus(focus, sticker) {
       this.focusedSticker = focus ? sticker : null;
+      // if (focus) {
+      //   this.focusedSticker.properties.op =
+      //     this.focusedSticker.properties.op || 1;
+      // }
     },
     deleteSticker(index) {
       this.stickers.splice(index, 1);

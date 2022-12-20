@@ -32,15 +32,31 @@
       <sticker-property title="Opacity">
         <input
           type="number"
-          step=".01"
+          step="0.01"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.opacity"
-          @change="
-            updateModelValue({
-              opacity: Math.max(Math.min($event.target.value, 1), 0),
-            })
-          "
+          :value="modelValue.op || 1"
+          @input="numberInput($event, 'op', 1, 2, 0, 1)"
         />
+        <!-- (event) => {
+              if (
+                !event.target.value.endsWith('.') &&
+                event.target.value != ''
+              ) {
+                let opacity = Math.round(
+                  Math.max(Math.min(parseFloat(event.target.value), 1), 0),
+                  2
+                );
+                updateModelValue({
+                  ...(opacity != 1 && { op: opacity }),
+                });
+              }
+            } -->
+        <!-- @input="
+            updateModelValue({
+              op: Math.max(Math.min($event.target.value, 1), 0),
+            })
+          " -->
+        <!-- @change="updateModelValue({ op: parseFloat($event.target.value) })" -->
       </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Font" v-if="modelValue.font != null">
@@ -205,7 +221,7 @@
         />
       </sticker-property>
     </sticker-property-group>
-    <sticker-property-group title="Scale" v-if="modelValue.scale != null">
+    <sticker-property-group title="Scale" v-if="modelValue.type">
       <div class="p-2 border-end">
         <input
           type="range"
@@ -213,39 +229,31 @@
           min="-2"
           max="2"
           step="1"
-          :value="modelValue.scale"
-          @input="
-            updateModelValue({
-              scale: parseFloat($event.target.value),
-            })
-          "
+          :value="modelValue.scale || 0"
+          @input="numberInput($event, 'scale', 0, 3, -10, 10)"
         />
         <div class="d-block m-auto text-nowrap">
           <input
             type="number"
             class="form-control form-control-small text-center d-inline-block"
-            :value="2 ** modelValue.scale * 100"
+            :value="Math.round(2 ** (modelValue.scale || 0) * 100)"
             @change="
-              updateModelValue({
-                scale: Math.log2(parseFloat($event.target.value) / 100),
-              })
+              numberInput($event, 'scale', 0, 3, -10, 10, (x) =>
+                Math.log2(parseFloat(x) / 100)
+              )
             "
           />
           <label class="px-2">%</label>
         </div>
       </div>
     </sticker-property-group>
-    <sticker-property-group title="Rotate" v-if="modelValue.rotation != null">
+    <sticker-property-group title="Rotate">
       <sticker-property title="Degrees">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.rotation"
-          @input="
-            updateModelValue({
-              rotation: parseFloat($event.target.value),
-            })
-          "
+          :value="modelValue.rot || 0"
+          @input="numberInput($event, 'rot', 0, 0, -1000, 1000)"
         />
       </sticker-property>
     </sticker-property-group>
@@ -329,11 +337,13 @@ export default {
   props: ["id", "modelValue"],
   emits: [
     "update:modelValue",
+    // "updateModelValue",
     "moveToFront",
     "moveUp",
     "moveDown",
     "moveToBack",
     "duplicate",
+    "test",
   ],
   data() {
     return {
@@ -369,11 +379,69 @@ export default {
     };
   },
   methods: {
+    numberInput: debounce(function (
+      event,
+      field,
+      defaultVal,
+      decimals = 2,
+      min = 0,
+      max = 1,
+      transform = (x) => x
+    ) {
+      // console.log(event);
+      // console.log(event.target.value);
+      // console.log(parseFloat(event.target.value));
+      // console.log(Math.max(Math.min(parseFloat(event.target.value), 1), 0));
+      // console.log(Math.min(parseFloat(event.target.value), 1));
+      // console.log(
+      //   Math.round(Math.max(Math.min(parseFloat(event.target.value), 1), 0), 2)
+      // );
+      if (!event.target.value.endsWith(".") && event.target.value != "") {
+        let newValue = //(
+          // Math.round(
+          Math.max(
+            Math.min(transform(parseFloat(event.target.value)), max),
+            min
+          )
+            .toFixed(decimals)
+            .replace(/\.?0+$/, ""); // * Math.pow(10, decimals)
+        // ) / Math.pow(10, decimals)
+        // ).toString();
+
+        console.log(Math.pow(10, decimals));
+
+        let newValues = {
+          ...this.modelValue,
+        };
+        if (newValue != defaultVal.toString()) {
+          newValues[field] = newValue;
+        } else {
+          delete newValues[field];
+        }
+
+        console.log(newValues);
+
+        this.$emit("update:modelValue", {
+          ...newValues,
+        });
+      }
+    }),
     updateModelValue: debounce(function (newValues) {
+      // this.$emit("test");
+      // console.log(newValues);
+      // console.log({
+      //   ...this.modelValue,
+      //   ...newValues,
+      // });
       this.$emit("update:modelValue", {
         ...this.modelValue,
         ...newValues,
       });
+      // this.$emit("updateModelValue", {
+      //   ...this.modelValue,
+      //   ...newValues,
+      // });
+      // console.log("emitted new value");
     }, 100),
     // updateModelValue(newValues) {
     //   this.$emit("update:modelValue", {
