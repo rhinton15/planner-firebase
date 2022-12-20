@@ -35,7 +35,7 @@
           step="0.01"
           class="form-control form-control-small m-auto text-center"
           :value="modelValue.op || 1"
-          @input="numberInput($event, 'op', 1, 2, 0, 1)"
+          @input="numberInput($event, null, 'op', 1, 2, 0, 1)"
         />
         <!-- (event) => {
               if (
@@ -112,40 +112,36 @@
         ></sticker-property-button>
       </sticker-property>
     </sticker-property-group>
-    <sticker-property-group title="Border" v-if="modelValue.border">
+    <sticker-property-group title="Border">
       <sticker-property title="On/Off">
         <div class="form-check form-switch">
           <input
             class="form-check-input"
             type="checkbox"
-            :checked="modelValue.border.on"
-            @click="
-              updateModelValue({
-                border: { ...modelValue.border, on: !modelValue.border.on },
-              })
-            "
+            :checked="modelValue.bord || false"
+            @input="boolInput('bord')"
           />
         </div>
       </sticker-property>
-      <sticker-property title="Color" v-if="modelValue.border.on">
+      <sticker-property title="Color" v-if="modelValue.bord">
         <input
           type="color"
           class="form-control form-control-color m-auto"
-          :value="modelValue.border.color"
+          :value="modelValue.bord.col"
           @input="
             updateModelValue({
-              border: { ...modelValue.border, color: $event.target.value },
+              border: { ...modelValue.bord, col: $event.target.value },
             })
           "
         />
       </sticker-property>
-      <sticker-property title="Style" v-if="modelValue.border.on">
+      <sticker-property title="Style" v-if="modelValue.bord">
         <select
           class="form-select w-auto"
-          :value="modelValue.border.style"
+          :value="modelValue.bord.sty"
           @input="
             updateModelValue({
-              border: { ...modelValue.border, style: $event.target.value },
+              border: { ...modelValue.bord, sty: $event.target.value },
             })
           "
         >
@@ -158,31 +154,31 @@
           </option>
         </select>
       </sticker-property>
-      <sticker-property title="Width" v-if="modelValue.border.on">
+      <sticker-property title="Width" v-if="modelValue.bord">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.border.width"
+          :value="modelValue.bord.w"
           @input="
             updateModelValue({
               border: {
-                ...modelValue.border,
-                width: parseFloat($event.target.value),
+                ...modelValue.bord,
+                w: parseFloat($event.target.value),
               },
             })
           "
         />
       </sticker-property>
-      <sticker-property title="Inset" v-if="modelValue.border.on">
+      <sticker-property title="Inset" v-if="modelValue.bord">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.border.inset"
+          :value="modelValue.bord.in"
           @input="
             updateModelValue({
               border: {
-                ...modelValue.border,
-                inset: parseFloat($event.target.value),
+                ...modelValue.bord,
+                in: parseFloat($event.target.value),
               },
             })
           "
@@ -193,15 +189,11 @@
       <sticker-property title="Width" v-if="modelValue.dim.w != null">
         <input
           type="number"
+          step="0.5"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.dim.w"
+          :value="(Math.round((modelValue.dim.w / 58) * 100) / 100).toString()"
           @input="
-            updateModelValue({
-              dim: {
-                ...modelValue.dim,
-                w: parseFloat($event.target.value),
-              },
-            })
+            numberInput($event, 'dim', 'w', null, 2, 5, 10000, (x) => x * 58)
           "
         />
       </sticker-property>
@@ -209,14 +201,9 @@
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.dim.h"
+          :value="(Math.round((modelValue.dim.h / 58) * 100) / 100).toString()"
           @input="
-            updateModelValue({
-              dim: {
-                ...modelValue.dim,
-                h: parseFloat($event.target.value),
-              },
-            })
+            numberInput($event, 'dim', 'h', null, 2, 5, 10000, (x) => x * 58)
           "
         />
       </sticker-property>
@@ -230,7 +217,7 @@
           max="2"
           step="1"
           :value="modelValue.scale || 0"
-          @input="numberInput($event, 'scale', 0, 3, -10, 10)"
+          @input="numberInput($event, null, 'scale', 0, 3, -10, 10)"
         />
         <div class="d-block m-auto text-nowrap">
           <input
@@ -238,7 +225,7 @@
             class="form-control form-control-small text-center d-inline-block"
             :value="Math.round(2 ** (modelValue.scale || 0) * 100)"
             @change="
-              numberInput($event, 'scale', 0, 3, -10, 10, (x) =>
+              numberInput($event, null, 'scale', 0, 3, -10, 10, (x) =>
                 Math.log2(parseFloat(x) / 100)
               )
             "
@@ -253,7 +240,7 @@
           type="number"
           class="form-control form-control-small m-auto text-center"
           :value="modelValue.rot || 0"
-          @input="numberInput($event, 'rot', 0, 0, -1000, 1000)"
+          @input="numberInput($event, null, 'rot', 0, 0, -1000, 1000)"
         />
       </sticker-property>
     </sticker-property-group>
@@ -381,6 +368,7 @@ export default {
   methods: {
     numberInput: debounce(function (
       event,
+      parentField,
       field,
       defaultVal,
       decimals = 2,
@@ -388,43 +376,64 @@ export default {
       max = 1,
       transform = (x) => x
     ) {
-      // console.log(event);
-      // console.log(event.target.value);
-      // console.log(parseFloat(event.target.value));
-      // console.log(Math.max(Math.min(parseFloat(event.target.value), 1), 0));
-      // console.log(Math.min(parseFloat(event.target.value), 1));
-      // console.log(
-      //   Math.round(Math.max(Math.min(parseFloat(event.target.value), 1), 0), 2)
-      // );
-      if (!event.target.value.endsWith(".") && event.target.value != "") {
-        let newValue = //(
-          // Math.round(
-          Math.max(
-            Math.min(transform(parseFloat(event.target.value)), max),
-            min
-          )
-            .toFixed(decimals)
-            .replace(/\.?0+$/, ""); // * Math.pow(10, decimals)
-        // ) / Math.pow(10, decimals)
-        // ).toString();
-
-        console.log(Math.pow(10, decimals));
+      if (
+        !event.target.value.endsWith(".") &&
+        event.target.value != "" &&
+        event.target.value != "-0"
+      ) {
+        let newValue = (
+          Math.round(
+            Math.max(
+              Math.min(transform(parseFloat(event.target.value)), max),
+              min
+            ) * Math.pow(10, decimals)
+          ) / Math.pow(10, decimals)
+        ).toString();
 
         let newValues = {
           ...this.modelValue,
         };
-        if (newValue != defaultVal.toString()) {
-          newValues[field] = newValue;
-        } else {
-          delete newValues[field];
-        }
 
-        console.log(newValues);
+        if (parentField != null) {
+          if (newValue != defaultVal?.toString()) {
+            newValues[parentField][field] = newValue;
+          } else {
+            delete newValues[parentField][field];
+          }
+        } else {
+          if (newValue != defaultVal?.toString()) {
+            newValues[field] = newValue;
+          } else {
+            delete newValues[field];
+          }
+        }
 
         this.$emit("update:modelValue", {
           ...newValues,
         });
       }
+    }),
+    boolInput: debounce(function (field) {
+      let newValues = {
+        ...this.modelValue,
+      };
+
+      if (!newValues[field]) {
+        newValues[field] = {
+          in: 5,
+          w: 5,
+          sty: "solid",
+          col: "#FFFFFF",
+        };
+      } else {
+        delete newValues[field];
+      }
+
+      console.log(newValues);
+
+      this.$emit("update:modelValue", {
+        ...newValues,
+      });
     }),
     updateModelValue: debounce(function (newValues) {
       // this.$emit("test");

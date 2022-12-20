@@ -8,9 +8,7 @@
       resize: 'none',
       width:
         modelValue.dim.w -
-        2 *
-          (modelValue.border.width + modelValue.border.inset) *
-          modelValue.border.on +
+        2 * (modelValue.bord.w + modelValue.bord.in) * (modelValue.bord || 0) +
         'px',
       height: '100%',
     }"
@@ -29,5 +27,14 @@
 export default {
   props: ["modelValue"],
   emit: ["update:modelValue"],
+  mounted() {
+    console.log(
+      this.modelValue.dim.w -
+        2 *
+          (this.modelValue.bord.w + this.modelValue.bord.in) *
+          (this.modelValue.bord ? 1 : 0) +
+        "px"
+    );
+  },
 };
 </script>

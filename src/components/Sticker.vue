@@ -48,20 +48,16 @@
         >
           <slot></slot>
           <div
-            v-if="modelValue.border"
+            v-if="modelValue.bord"
             class="position-absolute sticker-border"
             v-on:click.self.prevent
-            :style="`width: calc(100% - ${
-              2 * modelValue.border.inset * (modelValue.border.on || 0)
-            }px);
-              height: calc(100% - ${
-                2 * modelValue.border.inset * (modelValue.border.on || 0)
-              }px);
-              top: ${modelValue.border.inset * (modelValue.border.on || 0)}px;
-              left: ${modelValue.border.inset * (modelValue.border.on || 0)}px;
-              border: ${
-                modelValue.border.width * (modelValue.border.on || 0)
-              }px ${modelValue.border.style} ${modelValue.border.color};`"
+            :style="`width: calc(100% - ${2 * modelValue.bord.in}px);
+              height: calc(100% - ${2 * modelValue.bord.in}px);
+              top: ${modelValue.bord.in}px;
+              left: ${modelValue.bord.in}px;
+              border: ${modelValue.bord.w}px ${modelValue.bord.sty} ${
+              modelValue.bord.col
+            };`"
           >
             <!-- https://vuejs.org/guide/components/slots.html#named-slots -->
             <slot name="text"></slot>
@@ -361,13 +357,13 @@ export default {
         });
       } else if (resizing) {
         var newWidth =
-          startShift.dim.w +
+          startShift.dim.w * 1 +
           ((ePos.x / scale) * Math.cos(this.rotationRadians) +
             (ePos.y / scale) * Math.sin(this.rotationRadians)) -
           ((startPos.x / scale) * Math.cos(this.rotationRadians) +
             (startPos.y / scale) * Math.sin(this.rotationRadians));
         var newHeight =
-          startShift.dim.h -
+          startShift.dim.h * 1 -
           ((ePos.x / scale) * Math.sin(this.rotationRadians) -
             (ePos.y / scale) * Math.cos(this.rotationRadians)) +
           ((startPos.x / scale) * Math.sin(this.rotationRadians) -
@@ -392,8 +388,8 @@ export default {
 
         let newDimensions = {
           ...this.modelValue.dim,
-          w: Math.max(Math.round(newWidth), 5),
-          h: Math.max(Math.round(newHeight), 5),
+          w: Math.max(Math.round(newWidth), 5).toString(),
+          h: Math.max(Math.round(newHeight), 5).toString(),
         };
 
         // if (this.modelValue.dim.r) {

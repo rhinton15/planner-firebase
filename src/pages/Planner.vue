@@ -199,9 +199,10 @@
                       width:
                         sticker.properties.dim.w -
                         2 *
-                          (sticker.properties.border.width +
-                            sticker.properties.border.inset) *
-                          sticker.properties.border.on +
+                          (sticker.properties.bord?.w ||
+                            5 + sticker.properties.bord?.in ||
+                            5) *
+                          (sticker.properties.bord ? 1 : 0) +
                         'px',
                       height: '100%',
                     }"
@@ -228,9 +229,9 @@
                       width:
                         sticker.properties.dim.w -
                         2 *
-                          (sticker.properties.border.width +
-                            sticker.properties.border.inset) *
-                          sticker.properties.border.on +
+                          (sticker.properties.bord.w +
+                            sticker.properties.bord.in) *
+                          sticker.properties.bord +
                         'px',
                       height: '100%',
                     }"
@@ -628,13 +629,6 @@ export default {
             color: "#000000",
           },
           align: "center",
-          border: {
-            on: false,
-            inset: 5,
-            width: 5,
-            style: "solid",
-            color: "#FFFFFF",
-          },
         },
       });
       // https://stackoverflow.com/questions/59749325/vue-set-focus-to-dynamic-input-box
@@ -660,13 +654,6 @@ export default {
             family: "Waiting for the Sunrise",
             color: "#000000",
           },
-          border: {
-            on: false,
-            inset: 5,
-            width: 5,
-            style: "solid",
-            color: "#FFFFFF",
-          },
         },
       });
       this.$nextTick(() => {
@@ -681,14 +668,13 @@ export default {
           // position: sticker.position,
           // colors: sticker.colors,
           pos: this.modalProps.pos,
-          scale: 0,
-          border: {
-            on: false,
-            inset: 5,
-            width: 5,
-            style: "solid",
-            color: "#FFFFFF",
-          },
+          // border: {
+          //   on: false,
+          //   inset: 5,
+          //   width: 5,
+          //   style: "solid",
+          //   color: "#FFFFFF",
+          // },
           ...sticker,
         },
       });
@@ -746,8 +732,8 @@ export default {
         text.properties.dim.h =
           element.scrollHeight +
           2 *
-            (text.properties.border.width + text.properties.border.inset) *
-            text.properties.border.on;
+            (text.properties.bord.w + text.properties.bord.in) *
+            text.properties.bord;
         element.style.height = "100%";
       });
     },
@@ -944,13 +930,29 @@ export default {
           }
         });
 
-        // this.stickers.forEach((sticker) => {
-        //   // sticker.properties.scale = sticker.properties.scale || 1;
-        //   sticker.properties.rotation = sticker.properties.rotation || 0;
-        //   sticker.properties.align = sticker.properties.align || "center";
-        //   delete sticker.properties.align;
-        //   // delete sticker.rotation;
-        // }); // assign default value
+        this.stickers.forEach((sticker) => {
+          if (sticker.properties.border?.on) {
+            sticker.properties.bord = {
+              w: sticker.properties.border.width,
+              in: sticker.properties.border.inset,
+              sty: sticker.properties.border.style,
+              col: sticker.properties.border.color,
+            };
+            delete sticker.properties.border;
+          }
+          if (sticker.properties.opacity) {
+            if (sticker.properties.opacity != 1) {
+              sticker.properties.op = sticker.properties.opacity;
+            }
+            delete sticker.properties.opacity;
+          }
+
+          //   // sticker.properties.scale = sticker.properties.scale || 1;
+          //   sticker.properties.rotation = sticker.properties.rotation || 0;
+          //   sticker.properties.align = sticker.properties.align || "center";
+          //   delete sticker.properties.align;
+          //   // delete sticker.rotation;
+        }); // assign default value
 
         this.$nextTick(() => {
           this.pendingChanges = false;
