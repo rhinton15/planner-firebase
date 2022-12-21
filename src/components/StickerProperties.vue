@@ -64,23 +64,15 @@
         <input
           type="color"
           class="form-control form-control-color m-auto"
-          :value="modelValue.font.color"
-          @input="
-            updateModelValue({
-              font: { ...modelValue.font, color: $event.target.value },
-            })
-          "
+          :value="modelValue.font.col || '#000000'"
+          @input="stringInput($event, 'font', 'col', '#000000')"
         />
       </sticker-property>
       <sticker-property title="Font">
         <select
           class="form-select w-auto"
-          :value="modelValue.font.family"
-          @input="
-            updateModelValue({
-              font: { ...modelValue.font, family: $event.target.value },
-            })
-          "
+          :value="modelValue.font.fam"
+          @input="stringInput($event, 'font', 'fam', null)"
         >
           <option v-for="font in fonts.sort()" :key="font" :value="font">
             {{ font }}
@@ -92,23 +84,15 @@
           type="number"
           class="form-control form-control-small m-auto text-center"
           :value="modelValue.font.size"
-          @input="
-            updateModelValue({
-              font: { ...modelValue.font, size: $event.target.value },
-            })
-          "
+          @input="numberInput($event, 'font', 'size', null, 0, 1, 1000)"
         />
       </sticker-property>
       <sticker-property title="Bold">
         <sticker-property-button
           title="bold"
           icon="fa-solid fa-bold"
-          :class="`d-block ${modelValue.font.bold ? 'active' : ''}`"
-          @click="
-            updateModelValue({
-              font: { ...modelValue.font, bold: !modelValue.font.bold },
-            })
-          "
+          :class="`d-block ${modelValue.font.b ? 'active' : ''}`"
+          @click="boolInput('font', 'b', true)"
         ></sticker-property-button>
       </sticker-property>
     </sticker-property-group>
@@ -119,7 +103,7 @@
             class="form-check-input"
             type="checkbox"
             :checked="modelValue.bord || false"
-            @input="boolInput('bord')"
+            @input="boolInput(null, 'bord', {})"
           />
         </div>
       </sticker-property>
@@ -127,23 +111,15 @@
         <input
           type="color"
           class="form-control form-control-color m-auto"
-          :value="modelValue.bord.col"
-          @input="
-            updateModelValue({
-              border: { ...modelValue.bord, col: $event.target.value },
-            })
-          "
+          :value="modelValue.bord.col || '#ffffff'"
+          @input="stringInput($event, 'bord', 'col', '#ffffff')"
         />
       </sticker-property>
       <sticker-property title="Style" v-if="modelValue.bord">
         <select
           class="form-select w-auto"
-          :value="modelValue.bord.sty"
-          @input="
-            updateModelValue({
-              border: { ...modelValue.bord, sty: $event.target.value },
-            })
-          "
+          :value="modelValue.bord.sty || 'solid'"
+          @input="stringInput($event, 'bord', 'sty', 'solid')"
         >
           <option
             v-for="style in borderStyles"
@@ -158,30 +134,16 @@
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.bord.w"
-          @input="
-            updateModelValue({
-              border: {
-                ...modelValue.bord,
-                w: parseFloat($event.target.value),
-              },
-            })
-          "
+          :value="modelValue.bord.w || 5"
+          @input="numberInput($event, 'bord', 'w', 5, 0, 0, 100)"
         />
       </sticker-property>
       <sticker-property title="Inset" v-if="modelValue.bord">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"
-          :value="modelValue.bord.in"
-          @input="
-            updateModelValue({
-              border: {
-                ...modelValue.bord,
-                in: parseFloat($event.target.value),
-              },
-            })
-          "
+          :value="modelValue.bord.in || 5"
+          @input="numberInput($event, 'bord', 'in', 5, 0, 0, 100)"
         />
       </sticker-property>
     </sticker-property-group>
@@ -376,6 +338,7 @@ export default {
       max = 1,
       transform = (x) => x
     ) {
+      console.log(event.target.value);
       if (
         !event.target.value.endsWith(".") &&
         event.target.value != "" &&
@@ -407,28 +370,61 @@ export default {
             delete newValues[field];
           }
         }
+        console.log(newValues);
 
         this.$emit("update:modelValue", {
           ...newValues,
         });
       }
     }),
-    boolInput: debounce(function (field) {
+    boolInput: debounce(function (parentField, field, activeValue) {
       let newValues = {
         ...this.modelValue,
       };
 
-      if (!newValues[field]) {
-        newValues[field] = {
-          in: 5,
-          w: 5,
-          sty: "solid",
-          col: "#FFFFFF",
-        };
+      if (parentField != null) {
+        if (!newValues[parentField][field]) {
+          newValues[parentField][field] = activeValue;
+        } else {
+          delete newValues[parentField][field];
+        }
       } else {
-        delete newValues[field];
+        if (!newValues[field]) {
+          newValues[field] = activeValue;
+        } else {
+          delete newValues[field];
+        }
       }
 
+      this.$emit("update:modelValue", {
+        ...newValues,
+      });
+    }),
+    stringInput: debounce(function (
+      event,
+      parentField,
+      field,
+      defaultVal = ""
+    ) {
+      let newValue = event.target.value;
+
+      let newValues = {
+        ...this.modelValue,
+      };
+
+      if (parentField != null) {
+        if (newValue != defaultVal?.toString()) {
+          newValues[parentField][field] = newValue;
+        } else {
+          delete newValues[parentField][field];
+        }
+      } else {
+        if (newValue != defaultVal?.toString()) {
+          newValues[field] = newValue;
+        } else {
+          delete newValues[field];
+        }
+      }
       console.log(newValues);
 
       this.$emit("update:modelValue", {

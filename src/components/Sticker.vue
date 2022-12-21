@@ -51,13 +51,13 @@
             v-if="modelValue.bord"
             class="position-absolute sticker-border"
             v-on:click.self.prevent
-            :style="`width: calc(100% - ${2 * modelValue.bord.in}px);
-              height: calc(100% - ${2 * modelValue.bord.in}px);
-              top: ${modelValue.bord.in}px;
-              left: ${modelValue.bord.in}px;
-              border: ${modelValue.bord.w}px ${modelValue.bord.sty} ${
-              modelValue.bord.col
-            };`"
+            :style="`width: calc(100% - ${2 * (modelValue.bord.in || 5)}px);
+              height: calc(100% - ${2 * (modelValue.bord.in || 5)}px);
+              top: ${modelValue.bord.in || 5}px;
+              left: ${modelValue.bord.in || 5}px;
+              border: ${modelValue.bord.w || 5}px ${
+              modelValue.bord.sty || 'solid'
+            } ${modelValue.bord.col || '#FFFFFF'};`"
           >
             <!-- https://vuejs.org/guide/components/slots.html#named-slots -->
             <slot name="text"></slot>

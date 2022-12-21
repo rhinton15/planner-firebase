@@ -2,8 +2,8 @@
   <div class="h-100">
     <ul
       :style="{
-        color: modelValue.font.color,
-        fontFamily: modelValue.font.family,
+        color: modelValue.font.col || '#000000',
+        fontFamily: modelValue.font.fam,
         fontWeight: 400,
         fontSize: modelValue.font.size + 'px !important',
         resize: 'none',
@@ -11,8 +11,8 @@
         height: '100%',
       }"
       :colors="modelValue.colors"
-      :class="`fa-ul position-absolute top-0 start-0 ${
-        modelValue.font.bold ? 'fw-bold' : ''
+      :class="`fa-ul ${modal ? '' : 'position-absolute'} top-0 start-0 ${
+        modelValue.font.b ? 'fw-bold' : ''
       }`"
     >
       <li
@@ -34,10 +34,10 @@
       </li>
     </ul>
     <textarea
-      v-if="!screenShot"
+      v-if="!screenShot && !modal"
       :style="{
-        color: modelValue.font.color,
-        fontFamily: modelValue.font.family,
+        color: modelValue.font.col || '#000000',
+        fontFamily: modelValue.font.fam,
         fontWeight: 400,
         fontSize: modelValue.font.size + 'px !important',
         resize: 'none',
@@ -48,7 +48,7 @@
       }"
       :colors="modelValue.colors"
       :class="`border-0 bg-transparent overflow-hidden position-absolute top-0 start-0 py-0 pe-0 ${
-        modelValue.font.bold ? 'fw-bold' : ''
+        modelValue.font.b ? 'fw-bold' : ''
       }`"
       :value="todoString"
       @input="auto_grow($event.target)"
@@ -62,7 +62,7 @@
 import $ from "jquery";
 
 export default {
-  props: ["modelValue", "screenShot"],
+  props: ["modelValue", "screenShot", "modal"],
   emit: ["update:modelValue"],
   data() {
     return { selectionStart: null, selectionEnd: null };
@@ -138,20 +138,27 @@ export default {
       );
       const addedNewlineIndices = this.getAllIndexes(
         newNewlineIndices,
-        (index) => startInsert <= index && index <= endInsert
-      );
-      deletedNewlineIndices.forEach((index) => checked.splice(index + 1, 1));
-      addedNewlineIndices.forEach((index) =>
-        checked.splice(index + 1, 0, false)
+        (index) =>
+          startInsert <= index && index <= endInsert && startInsert < endInsert
       );
 
+      deletedNewlineIndices.forEach((index) => checked.splice(index + 1, 1));
+      addedNewlineIndices.forEach((index) => {
+        // if (newNewlineIndices.includes(newNewlineIndices[index] - 1)) {
+        //   checked.splice(index, 0, false);
+        // } else {
+        checked.splice(index + 1, 0, false);
+        // }
+      });
+
+      console.log(element.scrollHeight.toString());
       this.updateModelValue({
         items: element.value.split("\n").map((text, index) => {
           return { text, done: checked[index] || false };
         }),
         dim: {
           ...this.modelValue.dim,
-          h: element.scrollHeight,
+          h: element.scrollHeight.toString(),
         },
       });
       element.style.height = "100%";

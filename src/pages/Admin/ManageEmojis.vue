@@ -90,6 +90,7 @@ export default {
         "plant",
         "building",
         "event",
+        "holiday",
         "clothing",
         "school",
         "work",
@@ -121,7 +122,7 @@ export default {
 
       let newValue = {};
       newValue[code] = emoji;
-      await updateDoc(doc(db, "iconsnew", "doc"), newValue);
+      await updateDoc(doc(db, "stickers", "icon"), newValue);
     },
     addCategory(category) {
       var newCategory = category.toLower();
@@ -144,7 +145,7 @@ export default {
     },
   },
   async mounted() {
-    const docRef = doc(db, "iconsnew", "doc");
+    const docRef = doc(db, "stickers", "icon");
     var emojiDoc = await getDoc(docRef);
     this.emojiObj = emojiDoc.data();
   },

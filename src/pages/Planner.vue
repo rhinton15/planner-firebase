@@ -191,8 +191,8 @@
                     v-if="sticker.properties.text !== undefined && !screenShot"
                     :ref="'text-' + index"
                     :style="{
-                      color: sticker.properties.font.color,
-                      fontFamily: sticker.properties.font.family,
+                      color: sticker.properties.font.col || '#000000',
+                      fontFamily: sticker.properties.font.fam,
                       fontWeight: 400,
                       fontSize: sticker.properties.font.size + 'px !important',
                       resize: 'none',
@@ -210,7 +210,7 @@
                     :class="`text-${
                       sticker.properties.align
                     } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-                      sticker.properties.font.bold ? 'fw-bold' : ''
+                      sticker.properties.font.b ? 'fw-bold' : ''
                     }`"
                     v-model="sticker.properties.text"
                     @input="auto_grow($event.target, sticker)"
@@ -221,16 +221,16 @@
                       sticker.properties.text !== undefined && screenShot
                     "
                     :style="{
-                      color: sticker.properties.font.color,
-                      fontFamily: sticker.properties.font.family,
+                      color: sticker.properties.font.col || '#000000',
+                      fontFamily: sticker.properties.font.fam,
                       fontWeight: 400,
                       fontSize: sticker.properties.font.size + 'px !important',
                       resize: 'none',
                       width:
                         sticker.properties.dim.w -
                         2 *
-                          (sticker.properties.bord.w +
-                            sticker.properties.bord.in) *
+                          ((sticker.properties.bord.w || 5) +
+                            (sticker.properties.bord.in || 5)) *
                           sticker.properties.bord +
                         'px',
                       height: '100%',
@@ -239,7 +239,7 @@
                     :class="`text-${
                       sticker.properties.align
                     } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-                      sticker.properties.font.bold ? 'fw-bold' : ''
+                      sticker.properties.font.b ? 'fw-bold' : ''
                     }`"
                   >
                     {{ sticker.properties.text }}
@@ -619,14 +619,12 @@ export default {
           text: "",
           pos: this.modalProps.pos,
           dim: {
-            w: 174,
-            h: 50,
+            w: "174",
+            h: "50",
           },
           font: {
-            bold: false,
-            size: 34,
-            family: "Shadows Into Light Two",
-            color: "#000000",
+            size: "34",
+            fam: "Shadows Into Light Two",
           },
           align: "center",
         },
@@ -645,14 +643,12 @@ export default {
           items: [],
           pos: this.modalProps.pos,
           dim: {
-            w: 174,
-            h: 50,
+            w: "174",
+            h: "50",
           },
           font: {
-            bold: false,
-            size: 40,
-            family: "Waiting for the Sunrise",
-            color: "#000000",
+            size: "34",
+            fam: "Waiting for the Sunrise",
           },
         },
       });
@@ -729,11 +725,12 @@ export default {
     auto_grow(element, text) {
       this.$nextTick(() => {
         element.style.height = "5px";
-        text.properties.dim.h =
+        text.properties.dim.h = (
           element.scrollHeight +
           2 *
-            (text.properties.bord.w + text.properties.bord.in) *
-            text.properties.bord;
+            ((text.properties.bord?.w || 5) + (text.properties.bord?.in || 5)) *
+            (text.properties.bord ? 1 : 0)
+        ).toString();
         element.style.height = "100%";
       });
     },
@@ -938,13 +935,33 @@ export default {
               sty: sticker.properties.border.style,
               col: sticker.properties.border.color,
             };
-            delete sticker.properties.border;
           }
+          delete sticker.properties.border;
           if (sticker.properties.opacity) {
             if (sticker.properties.opacity != 1) {
               sticker.properties.op = sticker.properties.opacity;
             }
             delete sticker.properties.opacity;
+          }
+          if (sticker.properties.font) {
+            if (sticker.properties.font.bold) {
+              sticker.properties.font.b = true;
+            }
+            delete sticker.properties.font.bold;
+            if (sticker.properties.font.family) {
+              sticker.properties.font.fam = sticker.properties.font.family;
+              delete sticker.properties.font.family;
+            }
+            if (
+              sticker.properties.font.color &&
+              sticker.properties.font.color != "#000000"
+            ) {
+              sticker.properties.font.col = sticker.properties.font.color;
+            }
+            if (sticker.properties.font.col === "#000000") {
+              delete sticker.properties.font.col;
+            }
+            delete sticker.properties.font.color;
           }
 
           //   // sticker.properties.scale = sticker.properties.scale || 1;

@@ -1,8 +1,8 @@
 <template>
   <textarea
     :style="{
-      color: modelValue.font.color,
-      fontFamily: modelValue.font.family,
+      color: modelValue.font.col,
+      fontFamily: modelValue.font.fam,
       fontWeight: 400,
       fontSize: modelValue.font.size + 'px !important',
       resize: 'none',
@@ -16,7 +16,7 @@
     :class="`text-${
       modelValue.align
     } fs-1 border-0 bg-transparent textwhite overflow-hidden ${
-      modelValue.font.bold ? 'fw-bold' : ''
+      modelValue.font.b ? 'fw-bold' : ''
     }`"
     v-model="modelValue.text"
     @input="auto_grow($event.target, sticker)"
