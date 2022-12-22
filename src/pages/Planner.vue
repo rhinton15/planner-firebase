@@ -229,9 +229,9 @@
                       width:
                         sticker.properties.dim.w -
                         2 *
-                          ((sticker.properties.bord.w || 5) +
-                            (sticker.properties.bord.in || 5)) *
-                          sticker.properties.bord +
+                          ((sticker.properties.bord?.w || 5) +
+                            (sticker.properties.bord?.in || 5)) *
+                          (sticker.properties.bord ? 1 : 0) +
                         'px',
                       height: '100%',
                     }"

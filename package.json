@@ -23,7 +23,10 @@
     "lodash": "^4.17.21",
     "pinch-zoom-js": "^2.3.5",
     "vue": "^3.0.0",
-    "vue-router": "^4.1.6"
+    "vue-agile": "^2.0.0",
+    "vue-router": "^4.1.6",
+    "vue-slick": "^1.2.0",
+    "vueperslides": "^3.5.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.15",

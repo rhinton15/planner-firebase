@@ -41,6 +41,7 @@ import {
   faTableColumns,
   faTrash,
   faPalette,
+  faArrowTurnDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faCircleCheck, faCircle } from "@fortawesome/free-regular-svg-icons";
@@ -72,7 +73,8 @@ library.add(
   faCalendarDays,
   faTableColumns,
   faTrash,
-  faPalette
+  faPalette,
+  faArrowTurnDown
 );
 
 // don't load app until firebase is initialized

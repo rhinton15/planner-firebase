@@ -158,12 +158,35 @@
         </svg>
       </div>
       <div class="grid-text text-white text-start">
-        <p for="" class="fs-2 pt-3">Welcome to Fun Day Planners!</p>
-        <p for="" class="fs-6">Get started planning your fun today</p>
+        <p
+          for=""
+          class="pt-3"
+          style="font-family: 'Oooh Baby'; font-weight: 700; font-size: 40px"
+        >
+          Welcome to Fun Day Planners!
+        </p>
+        <p for="" style="font-family: 'Unkempt'; font-size: 20px">
+          Sign up to start planning your fun today (btw it's free)
+        </p>
       </div>
       <div class="grid-image">
         <img class="w-100" src="@/assets/tutorial.jpg" alt="" />
       </div>
+    </div>
+
+    <div
+      class="w-100 my-4 text-white p-3"
+      style="
+        font-family: 'Ribeye Marrow';
+        font-size: 30px;
+        background-color: #335170;
+      "
+    >
+      Design from scratch or start from a template
+      <font-awesome-icon icon="fa-solid fa-arrow-turn-down" />
+    </div>
+    <div class="mx-5 mb-5">
+      <carousel></carousel>
     </div>
   </div>
   <!-- <div>
@@ -173,11 +196,14 @@
 </template>
 
 <script>
+import Carousel from "../components/Carousel.vue";
+
 // const fb = require("./../../firebaseConfig.js");
 import { signOut } from "firebase/auth";
 import { getAuth } from "firebase/auth";
 
 export default {
+  components: { Carousel },
   methods: {
     getCurrentUser() {
       return getAuth().currentUser;
@@ -193,7 +219,7 @@ export default {
 <style scoped>
 .grid {
   display: grid;
-  grid-template-columns: 20px auto 65% 20px;
+  grid-template-columns: 20px 1fr 65% 20px;
   grid-template-rows: 40px 1fr 40px;
   column-gap: 6px;
 }
@@ -208,5 +234,26 @@ export default {
 .grid-image {
   grid-column: 3 / span 1;
   grid-row: 1 / span 3;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    display: grid;
+    grid-template-columns: 20px 1fr 20px;
+    grid-template-rows: auto auto 40px;
+    row-gap: 6px;
+  }
+  .grid-banner {
+    grid-column: 1 / span 3;
+    grid-row: 1 / span 2;
+  }
+  .grid-text {
+    grid-column: 2 / span 1;
+    grid-row: 1 / span 1;
+  }
+  .grid-image {
+    grid-column: 2 / span 1;
+    grid-row: 2 / span 2;
+  }
 }
 </style>
