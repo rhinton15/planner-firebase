@@ -27,14 +27,5 @@
 export default {
   props: ["modelValue"],
   emit: ["update:modelValue"],
-  mounted() {
-    console.log(
-      this.modelValue.dim.w -
-        2 *
-          (this.modelValue.bord.w + this.modelValue.bord.in) *
-          (this.modelValue.bord ? 1 : 0) +
-        "px"
-    );
-  },
 };
 </script>

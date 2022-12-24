@@ -1,57 +1,8 @@
 <template>
-  <!-- <vueper-slides
-    class="no-shadow w-100"
-    :visible-slides="5"
-    :gap="3"
-    :duration="4000"
-    :slide-ratio="1 / 4"
-    :dragging-distance="200"
-    :breakpoints="breakpoints"
-    fixed-height="150px"
-    autoplay
-  >
-    <vueper-slide v-for="slide in slides" :key="slide.id" :image="slide.url" />
-  </vueper-slides> -->
-  <!-- :style="{
-        backgroundImage: 'url(' + require('@/assets/tutorial.jpg') + ')',
-      }" -->
-  <!-- slide-multiple -->
-  <!-- :image="slide.image" -->
-  <!-- :content="slide.content" -->
-  <!-- <vueper-slide v-for="(slide, i) in slides" -->
-  <!-- :style="'background-color: ' + colors[i % 4]"  -->
-  <!-- <slick ref="slick" :options="slickOptions">
-    <a href="http://placehold.it/2000x1000"
-      ><img src="http://placehold.it/2000x1000" alt=""
-    /></a>
-    <a href="http://placehold.it/2000x1000"
-      ><img src="http://placehold.it/2000x1000" alt=""
-    /></a>
-    <a href="http://placehold.it/2000x1000"
-      ><img src="http://placehold.it/2000x1000" alt=""
-    /></a>
-    <a href="http://placehold.it/2000x1000"
-      ><img src="http://placehold.it/2000x1000" alt=""
-    /></a>
-    <a href="http://placehold.it/2000x1000"
-      ><img src="http://placehold.it/2000x1000" alt=""
-    /></a>
-  </slick> -->
-  <agile :responsive="responsive" ref="carousel" :key="slides.length" autoplay>
-    <!-- <img :src="slide.url" /> -->
-    <!-- {{ slide.id }} -->
+  <agile :responsive="responsive" :key="slides.length" autoplay>
     <div class="slide agile__slide" v-for="slide in slides" :key="slide.id">
-      <img :src="slide.url" class="w-100" />
+      <img :src="slide.url" class="w-100 px-2" />
     </div>
-    <!-- <div class="slide">
-      <img src="@/assets/tutorial.jpg" class="w-100" />
-    </div>
-    <div class="slide">
-      <img src="@/assets/tutorial.jpg" class="w-100" />
-    </div>
-    <div class="slide">
-      <img src="@/assets/tutorial.jpg" class="w-100" />
-    </div> -->
     <template #prevButton>
       <font-awesome-icon icon="fa-solid fa-chevron-left" />
     </template>
@@ -62,44 +13,18 @@
 </template>
 
 <script>
-// import Slick from "vue-slick";
-// import { VueperSlides, VueperSlide } from "vueperslides";
-// import "vueperslides/dist/vueperslides.css";
+import { VueAgile } from "vue-agile";
 
 import { storage } from "../firebase";
 import { getDownloadURL, ref, listAll } from "firebase/storage";
-import { VueAgile } from "vue-agile";
 
 export default {
   components: {
     agile: VueAgile,
   },
-  //   components: { VueperSlides, VueperSlide },
-  //   components: { Slick },
   data() {
     return {
       slides: [],
-      breakpoints: {
-        576: { visibleSlides: 1, slideMultiple: false },
-        768: { visibleSlides: 2, slideMultiple: false },
-        992: { visibleSlides: 3, slideMultiple: false },
-        1200: { visibleSlides: 4, slideMultiple: false },
-      },
-      slickOptions: {
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 2000,
-      },
-      html: `<div class="slide">
-      <h3>Text</h3>
-    </div>
-    <div class="slide">
-      <h3>Text</h3>
-    </div>
-    <div class="slide">
-      <h3>Text</h3>
-    </div>`,
       responsive: [
         {
           breakpoint: 576,
@@ -126,49 +51,11 @@ export default {
           },
         },
       ],
-      //     {
-      //       id: 1,
-      //       title: "abc",
-      //       image: "~@/assets/tutorial.jpg",
-      //       //   content: '<img style="width: 100px" src="img/tutorial.jpg" alt="" />',
-      //     },
-      //     {
-      //       id: 2,
-      //       title: "def",
-      //       content: '<img class="w-100" src="@/assets/tutorial.jpg" alt="" />',
-      //     },
-      //     {
-      //       id: 3,
-      //       title: "ghi",
-      //       content: '<img class="w-100" src="@/assets/tutorial.jpg" alt="" />',
-      //     },
-      //     {
-      //       id: 4,
-      //       title: "jkl",
-      //       content: '<img class="w-100" src="@/assets/tutorial.jpg" alt="" />',
-      //     },
-      //   ],
     };
   },
-  //   methods: {
-  //     next() {
-  //       this.$refs.slick.next();
-  //     },
-
-  //     prev() {
-  //       this.$refs.slick.prev();
-  //     },
-
-  //     reInit() {
-  //       // Helpful if you have to deal with v-for to update dynamic lists
-  //       this.$nextTick(() => {
-  //         this.$refs.slick.reSlick();
-  //       });
-  //     },
-  //   },
   async mounted() {
     let { items } = await listAll(
-      ref(storage, "templates/Li3JdUOXBLX26le7nQA7RlXKYWq1")
+      ref(storage, "templates/EcNkT67eGhOH2IAgMb9RZN2EEj03")
     );
     items.forEach(async (item) => {
       this.slides.push({
@@ -176,9 +63,6 @@ export default {
         url: await getDownloadURL(item),
       });
     });
-    await this.$nextTick();
-    this.$refs.carousel.reload();
-    console.log("reload");
   },
 };
 </script>

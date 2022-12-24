@@ -338,7 +338,6 @@ export default {
       max = 1,
       transform = (x) => x
     ) {
-      console.log(event.target.value);
       if (
         !event.target.value.endsWith(".") &&
         event.target.value != "" &&
@@ -370,7 +369,6 @@ export default {
             delete newValues[field];
           }
         }
-        console.log(newValues);
 
         this.$emit("update:modelValue", {
           ...newValues,
@@ -425,35 +423,17 @@ export default {
           delete newValues[field];
         }
       }
-      console.log(newValues);
 
       this.$emit("update:modelValue", {
         ...newValues,
       });
     }),
     updateModelValue: debounce(function (newValues) {
-      // this.$emit("test");
-      // console.log(newValues);
-      // console.log({
-      //   ...this.modelValue,
-      //   ...newValues,
-      // });
       this.$emit("update:modelValue", {
         ...this.modelValue,
         ...newValues,
       });
-      // this.$emit("updateModelValue", {
-      //   ...this.modelValue,
-      //   ...newValues,
-      // });
-      // console.log("emitted new value");
     }, 100),
-    // updateModelValue(newValues) {
-    //   this.$emit("update:modelValue", {
-    //     ...this.modelValue,
-    //     ...newValues,
-    //   });
-    // },
     moveToFront() {
       this.$emit("moveToFront", this.id);
     },

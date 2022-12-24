@@ -43,14 +43,14 @@ export default {
   },
   methods: {
     async getMessages() {
-      const q = query(collection(db, "messages"), where("read", "==", false));
+      const q = query(collection(db, "message"), where("read", "==", false));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((document) => {
         this.docs.push({ ...document.data(), id: document.id });
       });
     },
     async updateReadStatus(document) {
-      await updateDoc(doc(db, "messages", document.id), {
+      await updateDoc(doc(db, "message", document.id), {
         read: !document.read,
       });
     },

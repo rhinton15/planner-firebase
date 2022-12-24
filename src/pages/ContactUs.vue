@@ -48,7 +48,7 @@ export default {
   methods: {
     async submit() {
       try {
-        await addDoc(collection(db, "messages"), {
+        await addDoc(collection(db, "message"), {
           email: auth.currentUser.email,
           subject: this.subject,
           message: this.message,

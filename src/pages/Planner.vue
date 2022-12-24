@@ -35,9 +35,9 @@
             <button class="btn" title="clear planner" @click="clearPlanner">
               <font-awesome-icon icon="fa-solid fa-trash" />
             </button>
-            <button class="btn" title="set colors" @click="toggleColors">
+            <!-- <button class="btn" title="set colors" @click="toggleColors">
               <font-awesome-icon icon="fa-solid fa-palette" />
-            </button>
+            </button> -->
             <button class="btn text-dark d-md-none" @click="toggleCalendar">
               <font-awesome-icon icon="fa-solid fa-calendar-days" />
             </button>
@@ -67,10 +67,10 @@
                     </button>
                     <h1
                       :style="`
-                font-family: '${headerSettings.month.family}';
-                font-weight: ${headerSettings.month.bold ? 700 : 400};
-                font-size: ${headerSettings.month.size}px !important;
-                color: ${headerSettings.month.color};`"
+                font-family: '${headerSettings.m.fam || 'Montserrat'}';
+                font-weight: ${headerSettings.m.b ? 700 : 400};
+                font-size: ${headerSettings.m.size || 40}px !important;
+                color: ${headerSettings.m.col || '#000000'};`"
                     >
                       {{
                         new Date(
@@ -91,10 +91,10 @@
                       v-for="day in days"
                       :key="day"
                       :style="`
-                font-family: '${headerSettings.day.family}', cursive;
-                font-weight: ${headerSettings.day.bold ? 700 : 400};
-                font-size: ${headerSettings.day.size * 0.7}px !important;
-                color: ${headerSettings.day.color};
+                font-family: '${headerSettings.d.fam || 'Amatic SC'}', cursive;
+                font-weight: ${headerSettings.d.b ? 700 : 400};
+                font-size: ${headerSettings.d.size || 40}px !important;
+                color: ${headerSettings.d.col || '#000000'};
                 width: 174px;
               `"
                       class="text-center fs-1"
@@ -106,10 +106,10 @@
                       v-for="day in 7"
                       :key="day"
                       :style="`
-                font-family: '${headerSettings.day.family}', cursive;
-                font-weight: ${headerSettings.day.bold ? 700 : 400};
-                font-size: ${headerSettings.day.size}px !important;
-                color: ${headerSettings.day.color};
+                font-family: '${headerSettings.d.fam || 'Amatic SC'}', cursive;
+                font-weight: ${headerSettings.d.b ? 700 : 400};
+                font-size: ${headerSettings.d.size || 40}px !important;
+                color: ${headerSettings.d.col || '#000000'};
                 width: 174px;
               `"
                       class="text-center fs-1"
@@ -242,6 +242,7 @@
                       sticker.properties.font.b ? 'fw-bold' : ''
                     }`"
                   >
+                    <!-- Some Text -->
                     {{ sticker.properties.text }}
                   </div>
 
@@ -335,11 +336,11 @@
       </div>
     </base-modal>
 
-    <base-modal :open="showingColors" @close="toggleColors">
+    <!-- <base-modal :open="showingColors" @close="toggleColors">
       <div v-for="color in allColors" :key="color" :style="{ color: color }">
         {{ color }}
       </div>
-    </base-modal>
+    </base-modal> -->
 
     <add-sticker-modal
       :props="modalProps"
@@ -352,6 +353,7 @@
     <planner-header-settings
       v-if="editingHeader"
       v-model="headerSettings"
+      @removeFocus="editingHeader = false"
     ></planner-header-settings>
 
     <!-- v-model="focusedSticker.properties" -->
@@ -419,6 +421,7 @@ export default {
   },
   data() {
     return {
+      plannerId: null,
       testNum: 4,
       pageLoaded: false,
       timer: null,
@@ -433,17 +436,17 @@ export default {
       pendingChanges: false,
       output: "",
       headerSettings: {
-        month: {
-          color: "#000000",
-          family: "Montserrat",
-          size: 40,
-          bold: false,
+        m: {
+          // color: "#000000",
+          // family: "Montserrat",
+          // size: 40,
+          // bold: false,
         },
-        day: {
-          color: "#000000",
-          family: "Amatic SC",
-          size: 40,
-          bold: true,
+        d: {
+          // color: "#000000",
+          // family: "Amatic SC",
+          // size: 40,
+          // bold: true,
         },
       },
       editingHeader: false,
@@ -465,6 +468,7 @@ export default {
       ],
       screenShot: false,
       templates: [],
+      setupComplete: false,
     };
   },
   // https://stackoverflow.com/questions/49849376/vue-js-triggering-a-method-function-every-x-seconds
@@ -484,12 +488,28 @@ export default {
     }-${startOfWeek.getDate()}`;
 
     const docSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
-    this.showingTutorial = !docSnap.exists();
-    await setDoc(doc(db, "users", auth.currentUser.uid), {
-      new: false,
-    });
+
+    if (docSnap.exists()) {
+      this.plannerId = docSnap.data().lastPlan;
+    } else {
+      // add new
+      let docRef = await addDoc(
+        collection(db, "users", auth.currentUser.uid, "planners"),
+        {
+          name: "Planner 1",
+        }
+      );
+      this.plannerId = docRef.id;
+      await setDoc(doc(db, "users", auth.currentUser.uid), {
+        new: false,
+        lastPlan: docRef.id,
+      });
+    }
 
     this.loadTemplates();
+
+    this.showingTutorial = !docSnap.exists();
+    this.setupComplete = true;
   },
   async mounted() {
     const el = document.querySelector("div.pinch-zoom");
@@ -507,12 +527,12 @@ export default {
       }
     }, 60000); // save once per minute
 
-    var header = $(this.$refs.header);
-    $(document).on("mousedown touchstart", (e) => {
-      if ($(header).parent().has(e.target).length == 0) {
-        this.editingHeader = false;
-      }
-    });
+    // var header = $(this.$refs.header);
+    // $(document).on("mousedown touchstart", (e) => {
+    //   if ($(header).parent().has(e.target).length == 0) {
+    //     this.editingHeader = false;
+    //   }
+    // });
   },
   // https://stackoverflow.com/questions/34283891/vue-js-watch-array-of-objects
   watch: {
@@ -534,6 +554,15 @@ export default {
       },
       deep: true,
     },
+    setupComplete() {
+      this.loadPlanner(
+        auth.currentUser.uid,
+        "planners",
+        this.plannerId,
+        "plans",
+        this.currentWeek
+      );
+    },
     headerSettings: {
       handler: function () {
         this.pendingChanges = true;
@@ -552,23 +581,19 @@ export default {
         if (this.pendingChanges) {
           this.saveChanges(oldVal);
         }
-        this.loadPlanner(newVal);
+        this.loadPlanner(
+          auth.currentUser.uid,
+          "planners",
+          this.plannerId,
+          "plans",
+          newVal
+        );
       },
       // https://vuejs.org/guide/essentials/watchers.html#eager-watchers
-      immediate: true,
+      immediate: false,
     },
   },
   methods: {
-    // printTest() {
-    //   console.log("test");
-    // },
-    // printNewVal(newVal) {
-    //   console.log(newVal);
-    //   console.log(this.focusedSticker);
-    // },
-    updateTestNum(val) {
-      console.log(val);
-    },
     showModal(props) {
       if (this.pageLoaded) {
         this.modalProps = props;
@@ -619,11 +644,11 @@ export default {
           text: "",
           pos: this.modalProps.pos,
           dim: {
-            w: "174",
+            w: "174", //"450",
             h: "50",
           },
           font: {
-            size: "34",
+            size: "34", //"120",
             fam: "Shadows Into Light Two",
           },
           align: "center",
@@ -643,12 +668,14 @@ export default {
           items: [],
           pos: this.modalProps.pos,
           dim: {
-            w: "174",
+            w: "174", //"720",
             h: "50",
           },
           font: {
-            size: "34",
-            fam: "Waiting for the Sunrise",
+            size: "34", //"43",
+            fam: "Waiting for the Sunrise", //"Shadows Into Light Two",
+            // col: "#ffffff",
+            // b: true,
           },
         },
       });
@@ -715,6 +742,7 @@ export default {
     },
     deleteSticker(index) {
       this.stickers.splice(index, 1);
+      this.focusedSticker = null;
     },
     deleteText(index) {
       this.texts.splice(index, 1);
@@ -740,7 +768,7 @@ export default {
         // replace existing
         await setDoc(
           doc(db, "users", auth.currentUser.uid, "templates", this.templateId),
-          this.plannerDocument
+          this.templateDocument
         );
         this.templates.splice(
           this.templates.findIndex((item) => item.id === this.templateId),
@@ -767,7 +795,7 @@ export default {
         // add new
         let docRef = await addDoc(
           collection(db, "users", auth.currentUser.uid, "templates"),
-          this.plannerDocument
+          this.templateDocument
         );
         this.templateId = docRef.id;
         await this.saveChanges(this.currentWeek);
@@ -799,7 +827,12 @@ export default {
           async (blob) => {
             await uploadBytes(storageRef, blob, metadata);
             const url = await getDownloadURL(storageRef);
-            this.templates.unshift({ id: this.templateId, url });
+            this.templates.unshift({
+              id: this.templateId,
+              uid: auth.currentUser.uid,
+              mine: true,
+              url,
+            });
             // this.templates.unshift({ id: this.templateId, url, version });
           },
           "image/jpeg",
@@ -849,12 +882,13 @@ export default {
     },
     async loadTemplate(template) {
       let existingStickers = this.stickers;
-      await this.loadPlanner(template.id, template.uid, "templates");
-      this.stickers = this.stickers.concat(existingStickers);
+      await this.loadPlanner(template.uid, "templates", template.id);
+      // this.stickers = this.stickers.concat(existingStickers);
+      this.stickers = existingStickers.concat(this.stickers);
       await this.saveChanges(this.currentWeek);
       this.setShowingTemplate(null);
     },
-    async loadPlanner(id, uid = auth.currentUser.uid, collection = "planner") {
+    async loadPlanner(...args) {
       this.showingCalendar = false;
       this.focusedSticker = null;
       this.pageLoaded = false;
@@ -862,8 +896,9 @@ export default {
       this.todos = null;
       this.stickers = null;
 
-      if (id) {
-        const docRef = doc(db, "users", uid, collection, id);
+      if (this.setupComplete && args[args.length - 1]) {
+        const docRef = doc(db, "users", ...args);
+        // const docRef = doc(db, "users", uid, collection, id);
         const docSnap = await getDoc(docRef);
 
         var res = docSnap.data();
@@ -875,17 +910,17 @@ export default {
         this.todos = res?.todo || [];
         this.stickers = res?.stickers || [];
         this.headerSettings = res?.header || {
-          month: {
-            color: "#000000",
-            family: "Montserrat",
-            size: 40,
-            bold: false,
+          m: {
+            // color: "#000000",
+            // family: "Montserrat",
+            // size: 40,
+            // bold: false,
           },
-          day: {
-            color: "#000000",
-            family: "Amatic SC",
-            size: 40,
-            bold: true,
+          d: {
+            // color: "#000000",
+            // family: "Amatic SC",
+            // size: 40,
+            // bold: true,
           },
         };
 
@@ -903,6 +938,8 @@ export default {
         // this.stickers = this.stickers.filter(
         //   (sticker) => sticker.properties.type !== "\u26BD"
         // );
+
+        // this.headerSettings = { m: {}, d: {} };
 
         this.stickers.forEach((sticker) => {
           if (sticker.properties.dimensions) {
@@ -979,9 +1016,23 @@ export default {
     async clearPlanner() {
       if (confirm("Clear all stickers from planner?")) {
         await deleteDoc(
-          doc(db, "users", auth.currentUser.uid, "planner", this.currentWeek)
+          doc(
+            db,
+            "users",
+            auth.currentUser.uid,
+            "planners",
+            this.plannerId,
+            "plans",
+            this.currentWeek
+          )
         );
-        await this.loadPlanner(this.currentWeek);
+        await this.loadPlanner(
+          auth.currentUser.uid,
+          "planners",
+          this.plannerId,
+          "plans",
+          this.currentWeek
+        );
       }
     },
     async saveChanges(week) {
@@ -995,7 +1046,15 @@ export default {
 
         try {
           await setDoc(
-            doc(db, "users", auth.currentUser.uid, "planner", week),
+            doc(
+              db,
+              "users",
+              auth.currentUser.uid,
+              "planners",
+              this.plannerId,
+              "plans",
+              week
+            ),
             newDoc
           );
           this.pendingChanges = false;
@@ -1014,9 +1073,9 @@ export default {
     setShowingTemplate(val) {
       this.showingTemplate = val;
     },
-    toggleColors() {
-      this.showingColors = !this.showingColors;
-    },
+    // toggleColors() {
+    //   this.showingColors = !this.showingColors;
+    // },
     toggleCalendar() {
       this.showingCalendar = !this.showingCalendar;
     },
@@ -1036,17 +1095,37 @@ export default {
           ),
       };
     },
-    allColors() {
-      return this.stickers
-        .map((sticker) => {
-          const colors = sticker.properties.colors || [];
-          const fontColor = sticker.properties.font?.color || [];
-          // TODO: include border color
-          return colors.concat(fontColor);
-        })
-        .flat()
-        .filter((value, index, self) => self.indexOf(value) === index);
+    templateDocument() {
+      const stickers = [];
+      this.plannerDocument.stickers.forEach((sticker) => {
+        if (sticker.text) {
+          // text
+          stickers.push({ ...sticker, text: "Some Text" });
+        } else if (sticker.items) {
+          // to do
+          const toDos = [];
+          sticker.items.forEach(() => {
+            toDos.push({ text: "To Do" });
+          });
+          stickers.push({ ...sticker, items: toDos });
+        } else {
+          // pattern
+          stickers.push(sticker);
+        }
+      });
+      return { ...this.plannerDocument, stickers };
     },
+    // allColors() {
+    //   return this.stickers
+    //     .map((sticker) => {
+    //       const colors = sticker.properties.colors || [];
+    //       const fontColor = sticker.properties.font?.color || [];
+    //       // TODO: include border color
+    //       return colors.concat(fontColor);
+    //     })
+    //     .flat()
+    //     .filter((value, index, self) => self.indexOf(value) === index);
+    // },
     saveButton() {
       let buttonConfig = {};
       switch (this.saveStatus) {

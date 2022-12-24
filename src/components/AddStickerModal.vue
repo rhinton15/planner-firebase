@@ -119,9 +119,9 @@ export default {
       categories: [],
       toDoDemo: {
         items: [
-          { text: "Cook", done: false },
+          { text: "Cook" },
           { text: "Clean", done: true },
-          { text: "Shower", done: false },
+          { text: "Shower" },
         ],
         dim: {
           w: 174,

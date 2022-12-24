@@ -168,9 +168,28 @@
         <p for="" style="font-family: 'Unkempt'; font-size: 20px">
           Sign up to start planning your fun today (btw it's free)
         </p>
+        <div class="text-center">
+          <button class="btn btn-signup" @click="$router.push('/login')">
+            Sign Up
+          </button>
+          <!-- #eae2d0 -->
+        </div>
       </div>
       <div class="grid-image">
-        <img class="w-100" src="@/assets/tutorial.jpg" alt="" />
+        <!-- :class="`w-100 ${showVideo ? '' : 'd-none'}`" -->
+        <video
+          class="w-100"
+          autoplay
+          loop
+          muted
+          playsinline
+          playbackRate="2.0"
+          @loadeddata="showVideo = true"
+        >
+          <source src="../assets/tutorial.mp4" type="video/mp4" />
+          This browser does not display the video tag.
+        </video>
+        <!-- <img class="w-100" src="@/assets/tutorial.jpg" alt="" /> -->
       </div>
     </div>
 
@@ -204,6 +223,11 @@ import { getAuth } from "firebase/auth";
 
 export default {
   components: { Carousel },
+  data() {
+    return {
+      showVideo: false,
+    };
+  },
   methods: {
     getCurrentUser() {
       return getAuth().currentUser;
@@ -217,6 +241,16 @@ export default {
 </script>
 
 <style scoped>
+.btn-signup {
+  color: white;
+  border-color: white;
+}
+.btn-signup:hover,
+.btn-signup:active {
+  color: #335170;
+  background-color: white;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 20px 1fr 65% 20px;

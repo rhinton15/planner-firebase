@@ -31,6 +31,7 @@
             :icon="`fa-regular fa-circle${item.done ? '-check' : ''}`"
         /></span>
         {{ item.text || "\xa0" }}
+        <!-- {{ screenShot ? "To Do" : item.text || "\xa0" }} -->
       </li>
     </ul>
     <textarea
@@ -151,10 +152,14 @@ export default {
         // }
       });
 
-      console.log(element.scrollHeight.toString());
       this.updateModelValue({
         items: element.value.split("\n").map((text, index) => {
-          return { text, done: checked[index] || false };
+          return {
+            text,
+            ...(checked[index] && {
+              done: checked[index],
+            }),
+          };
         }),
         dim: {
           ...this.modelValue.dim,

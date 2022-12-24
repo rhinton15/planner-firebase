@@ -1,5 +1,9 @@
 <template>
-  <div class="settings d-flex overflow-auto" style="z-index: 1000">
+  <div
+    class="settings d-flex overflow-auto"
+    style="z-index: 1000"
+    @click="(e) => e.stopPropagation()"
+  >
     <div class="d-flex flex-column border-end border-secondary my-2 px-2">
       <label
         class="form-label text-nowrap m-0 border-bottom border-secondary px-2"
@@ -11,24 +15,16 @@
           <input
             type="color"
             class="form-control form-control-color m-auto"
-            :value="modelValue.month.color"
-            @input="
-              updateModelValue({
-                month: { ...modelValue.month, color: $event.target.value },
-              })
-            "
+            :value="modelValue.m.col || '#000000'"
+            @input="stringInput($event, 'm', 'col', '#000000')"
           />
         </div>
         <div class="p-2">
           <label class="form-label text-nowrap">Font</label>
           <select
             class="form-select w-auto"
-            :value="modelValue.month.family"
-            @input="
-              updateModelValue({
-                month: { ...modelValue.month, family: $event.target.value },
-              })
-            "
+            :value="modelValue.m.fam || 'Montserrat'"
+            @input="stringInput($event, 'm', 'fam', 'Montserrat')"
           >
             <option v-for="font in fonts.sort()" :key="font" :value="font">
               {{ font }}
@@ -40,25 +36,17 @@
           <input
             type="number"
             class="form-control form-control-small m-auto text-center"
-            :value="modelValue.month.size"
-            @input="
-              updateModelValue({
-                month: { ...modelValue.month, size: $event.target.value },
-              })
-            "
+            :value="modelValue.m.size || 40"
+            @input="numberInput($event, 'm', 'size', 40, 0, 1, 1000)"
           />
         </div>
         <div class="p-2">
           <label class="form-label text-nowrap">Bold</label>
           <button
             :class="`btn btn-outline-secondary d-block ${
-              modelValue.month.bold ? 'active' : ''
+              modelValue.m.b ? 'active' : ''
             }`"
-            @click="
-              updateModelValue({
-                month: { ...modelValue.month, bold: !modelValue.month.bold },
-              })
-            "
+            @click="boolInput('m', 'b', true)"
           >
             <font-awesome-icon icon="fa-solid fa-bold" />
           </button>
@@ -77,24 +65,16 @@
           <input
             type="color"
             class="form-control form-control-color m-auto"
-            :value="modelValue.day.color"
-            @input="
-              updateModelValue({
-                day: { ...modelValue.day, color: $event.target.value },
-              })
-            "
+            :value="modelValue.d.col || '#000000'"
+            @input="stringInput($event, 'd', 'col', '#000000')"
           />
         </div>
         <div class="p-2">
           <label class="form-label text-nowrap">Font</label>
           <select
             class="form-select w-auto"
-            :value="modelValue.day.family"
-            @input="
-              updateModelValue({
-                day: { ...modelValue.day, family: $event.target.value },
-              })
-            "
+            :value="modelValue.d.fam || 'Amatic SC'"
+            @input="stringInput($event, 'm', 'fam', 'Amatic SC')"
           >
             <option v-for="font in fonts.sort()" :key="font" :value="font">
               {{ font }}
@@ -106,25 +86,17 @@
           <input
             type="number"
             class="form-control form-control-small m-auto text-center"
-            :value="modelValue.day.size"
-            @input="
-              updateModelValue({
-                day: { ...modelValue.day, size: $event.target.value },
-              })
-            "
+            :value="modelValue.d.size || 40"
+            @input="numberInput($event, 'd', 'size', 40, 0, 1, 1000)"
           />
         </div>
         <div class="p-2">
           <label class="form-label text-nowrap">Bold</label>
           <button
             :class="`btn btn-outline-secondary d-block ${
-              modelValue.day.bold ? 'active' : ''
+              modelValue.d.b ? 'active' : ''
             }`"
-            @click="
-              updateModelValue({
-                day: { ...modelValue.day, bold: !modelValue.day.bold },
-              })
-            "
+            @click="boolInput('d', 'b', true)"
           >
             <font-awesome-icon icon="fa-solid fa-bold" />
           </button>
@@ -132,12 +104,15 @@
       </div>
     </div>
   </div>
+  <div class="backdrop" @click="removeFocus"></div>
 </template>
 
 <script>
+import { debounce } from "lodash";
+
 export default {
   props: ["modelValue"],
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue", "removeFocus"],
   data() {
     return {
       fonts: [
@@ -177,6 +152,109 @@ export default {
         ...newValues,
       });
     },
+    removeFocus() {
+      this.$emit("removeFocus");
+    },
+    numberInput: debounce(function (
+      event,
+      parentField,
+      field,
+      defaultVal,
+      decimals = 2,
+      min = 0,
+      max = 1,
+      transform = (x) => x
+    ) {
+      if (
+        !event.target.value.endsWith(".") &&
+        event.target.value != "" &&
+        event.target.value != "-0"
+      ) {
+        let newValue = (
+          Math.round(
+            Math.max(
+              Math.min(transform(parseFloat(event.target.value)), max),
+              min
+            ) * Math.pow(10, decimals)
+          ) / Math.pow(10, decimals)
+        ).toString();
+
+        let newValues = {
+          ...this.modelValue,
+        };
+
+        if (parentField != null) {
+          if (newValue != defaultVal?.toString()) {
+            newValues[parentField][field] = newValue;
+          } else {
+            delete newValues[parentField][field];
+          }
+        } else {
+          if (newValue != defaultVal?.toString()) {
+            newValues[field] = newValue;
+          } else {
+            delete newValues[field];
+          }
+        }
+
+        this.$emit("update:modelValue", {
+          ...newValues,
+        });
+      }
+    }),
+    boolInput: debounce(function (parentField, field, activeValue) {
+      let newValues = {
+        ...this.modelValue,
+      };
+
+      if (parentField != null) {
+        if (!newValues[parentField][field]) {
+          newValues[parentField][field] = activeValue;
+        } else {
+          delete newValues[parentField][field];
+        }
+      } else {
+        if (!newValues[field]) {
+          newValues[field] = activeValue;
+        } else {
+          delete newValues[field];
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...newValues,
+      });
+    }),
+    stringInput: debounce(function (
+      event,
+      parentField,
+      field,
+      defaultVal = ""
+    ) {
+      let newValue = event.target.value;
+
+      let newValues = {
+        ...this.modelValue,
+      };
+
+      if (parentField != null) {
+        if (newValue != defaultVal?.toString()) {
+          newValues[parentField][field] = newValue;
+        } else {
+          delete newValues[parentField][field];
+        }
+      } else {
+        if (newValue != defaultVal?.toString()) {
+          newValues[field] = newValue;
+        } else {
+          delete newValues[field];
+        }
+      }
+
+      this.$emit("update:modelValue", {
+        ...newValues,
+      });
+    }),
   },
 };
 </script>
