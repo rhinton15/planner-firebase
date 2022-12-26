@@ -57,6 +57,8 @@
                           height: 290px !important;
                         `"
                       :name="pattern.id"
+                      :width="290 / (pattern.ratio || 5 / 3)"
+                      :height="290"
                       @click="
                         (colors) =>
                           addSticker(pattern.id, colors, {

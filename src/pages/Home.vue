@@ -177,7 +177,20 @@
       </div>
       <div class="grid-image">
         <!-- :class="`w-100 ${showVideo ? '' : 'd-none'}`" -->
-        <video
+        <!-- class="w-100" -->
+        <!-- width="560"
+          height="315" -->
+        <!-- style="aspect-ratio: 112/63" -->
+        <iframe
+          class="w-100"
+          style="aspect-ratio: 99/63"
+          src="https://www.youtube.com/embed/7xduzR_lN-8?autoplay=1&playlist=7xduzR_lN-8&loop=1&controls=0&modestbranding=1&mute=1"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <!-- <video
           class="w-100"
           autoplay
           loop
@@ -188,7 +201,7 @@
         >
           <source src="../assets/tutorial.mp4" type="video/mp4" />
           This browser does not display the video tag.
-        </video>
+        </video> -->
         <!-- <img class="w-100" src="@/assets/tutorial.jpg" alt="" /> -->
       </div>
     </div>

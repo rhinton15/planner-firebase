@@ -29,7 +29,7 @@
           @change="updateModelValue({ colors: colors })"
         />
       </sticker-property>
-      <sticker-property title="Opacity">
+      <sticker-property title="Tranparency">
         <input
           type="number"
           step="0.01"

@@ -32,6 +32,9 @@
             >
               <font-awesome-icon icon="fa-solid fa-table-columns" />
             </button>
+            <button class="btn" title="add sticker" @click="addStickerModal">
+              <font-awesome-icon icon="fa-solid fa-plus" />
+            </button>
             <button class="btn" title="clear planner" @click="clearPlanner">
               <font-awesome-icon icon="fa-solid fa-trash" />
             </button>
@@ -184,6 +187,8 @@
                   :scale="sticker.properties.scale"
                   :colors="sticker.properties.colors"
                   :name="sticker.properties.type"
+                  :width="sticker.properties.dim.w"
+                  :height="sticker.properties.dim.h"
                 ></svg-sticker>
 
                 <template #text>
@@ -594,6 +599,15 @@ export default {
     },
   },
   methods: {
+    addStickerModal() {
+      this.showModal({
+        pos: { y: 500, x: 500 },
+        dim: {
+          w: 174,
+          h: 290,
+        },
+      });
+    },
     showModal(props) {
       if (this.pageLoaded) {
         this.modalProps = props;

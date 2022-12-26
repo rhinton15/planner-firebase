@@ -1,10 +1,16 @@
 <template>
   <nav
-    class="navbar navbar-expand-md navbar-dark fixed-top"
-    style="background-color: #a9a9a9"
+    class="navbar navbar-expand-md navbar-dark fixed-top p-0"
+    style="background-color: #737373"
   >
     <div class="container-fluid">
-      <router-link class="navbar-brand" to="/">Calendar Website</router-link>
+      <router-link class="navbar-brand" to="/"
+        ><span
+          style="font-family: 'Oooh Baby'; font-weight: 700; font-size: 32px"
+        >
+          Fun Day Planners
+        </span></router-link
+      >
       <button
         class="navbar-toggler border-0 shadow-none"
         type="button"
@@ -16,14 +22,22 @@
       </button>
       <div
         class="offcanvas offcanvas-end"
-        style="background-color: #a9a9a9"
+        style="background-color: #737373"
         tabindex="-1"
         id="offcanvasNavbar"
         aria-labelledby="offcanvasNavbarLabel"
       >
         <div class="offcanvas-header">
           <h5 class="offcanvas-title text-white" id="offcanvasNavbarLabel">
-            Calendar Website
+            <span
+              style="
+                font-family: 'Oooh Baby';
+                font-weight: 700;
+                font-size: 32px;
+              "
+            >
+              Fun Day Planners
+            </span>
           </h5>
           <button
             type="button"
@@ -34,11 +48,11 @@
         </div>
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-            <li class="nav-item px-2 my-1">
+            <!-- <li class="nav-item px-2 my-1">
               <router-link class="nav-link underline p-0" to="/"
                 >Home</router-link
               >
-            </li>
+            </li> -->
             <li class="nav-item px-2 my-1" v-if="isAuth">
               <router-link class="nav-link underline p-0" to="/planner"
                 >Planner</router-link
@@ -85,7 +99,8 @@ export default {
   methods: {
     async logout() {
       await signOut(auth);
-      this.$router.push("/login");
+      this.$router.push("/");
+      $(".offcanvas .btn-close").click();
     },
     updateAuthState() {
       this.isAuth = !!auth.currentUser;
@@ -113,7 +128,7 @@ export default {
   },
   mounted() {
     $(".offcanvas-body a").click(() => {
-      $(".offcanvas .btn-close").click();
+      setTimeout(() => $(".offcanvas .btn-close").click(), 10);
     });
   },
 };

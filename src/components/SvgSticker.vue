@@ -8,7 +8,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
 export default {
-  props: ["scale", "colors", "name"],
+  props: ["scale", "colors", "name", "width", "height"],
   emits: ["click"],
   data() {
     return {
@@ -61,6 +61,13 @@ export default {
         "<pattern",
         `<pattern style='transform: scale(${2 ** (this.scale || 0)})'`
       );
+
+      if (this.width) {
+        svgText = svgText.replace('width="100%"', `width="${this.width}px"`);
+      }
+      if (this.height) {
+        svgText = svgText.replace('height="100%"', `height="${this.height}px"`);
+      }
 
       return svgText;
     },

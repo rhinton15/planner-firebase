@@ -20,6 +20,8 @@
         'px; pointer-events: none; '
       "
       v-if="visible"
+      @mousedown="focusSticker"
+      @touchdown="focusSticker"
       @click="focusSticker"
     >
       <div
@@ -150,8 +152,11 @@ export default {
       $(document).trigger("mousedown");
       this.$refs.sticker.click();
     },
-    focusSticker() {
-      this.isFocused = true;
+    focusSticker(e) {
+      if (!this.isFocused) {
+        this.isFocused = true;
+        e.preventDefault();
+      }
     },
     // updateModelValue: debounce(function (newValues) {
     //   this.$emit("update:modelValue", {
