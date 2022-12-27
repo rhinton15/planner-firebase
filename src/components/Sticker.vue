@@ -8,9 +8,9 @@
       "
       :style="
         'top: ' +
-        (this.modelValue.pos.y + this.offsetTop) +
+        (this.modelValue.pos.y + this.offset.top) +
         'px; left: ' +
-        (this.modelValue.pos.x + this.offsetLeft) +
+        (this.modelValue.pos.x + this.offset.left) +
         'px; ' +
         (this.isFocused ? ' z-index: 100;' : '') +
         'width: ' +
@@ -110,14 +110,12 @@ import $ from "jquery";
 // import { debounce } from "lodash";
 
 export default {
-  props: ["id", "modelValue", "snapHeight"],
+  props: ["id", "modelValue", "snapHeight", "offset"],
   emits: ["update:modelValue", "update:focus", "delete"],
   data() {
     return {
       visible: true,
       rotation: 0,
-      offsetTop: 0,
-      offsetLeft: 0,
       isFocused: false,
       colors: [],
     };
@@ -206,24 +204,29 @@ export default {
 
       return { dimensions, margins };
     },
-    updateOffset() {
-      var cell1 = document.getElementById("1-1"); // TODO: fix this
-      // https://stackoverflow.com/questions/46451319/access-el-inside-a-computed-property
-      // https://stackoverflow.com/questions/11634770/get-position-offset-of-element-relative-to-a-parent-container
-      this.offsetTop = cell1.offsetTop;
-      this.offsetLeft = cell1.offsetLeft;
-    },
     removeFocus() {
       this.isFocused = false;
     },
+    calculatePosition(newX, newY) {
+      newX = Math.round(
+        Math.min(
+          Math.max(newX, this.offset.left * -1),
+          174 * 7 + this.offset.left - this.boundingBox.dimensions.width
+        )
+      );
+
+      // TODO: revisit this when adding feature to add rows
+      newY = Math.round(
+        Math.min(
+          Math.max(newY, this.offset.top * -1),
+          290 * 3 - this.boundingBox.dimensions.height
+        )
+      );
+
+      return { x: newX, y: newY };
+    },
   },
   mounted() {
-    $(window).resize(() => {
-      this.updateOffset();
-    });
-
-    this.updateOffset();
-
     var dragging = false;
     var moving = false;
     var resizing = false;
@@ -358,7 +361,7 @@ export default {
 
         this.$emit("update:modelValue", {
           ...this.modelValue,
-          pos: { y: newY, x: newX },
+          pos: this.calculatePosition(newX, newY),
         });
       } else if (resizing) {
         var newWidth =
@@ -447,10 +450,7 @@ export default {
         this.$emit("update:modelValue", {
           ...this.modelValue,
           dim: newDimensions,
-          pos: {
-            x: Math.round(newPosition.x),
-            y: Math.round(newPosition.y),
-          },
+          pos: this.calculatePosition(newPosition.x, newPosition.y),
         });
       }
       // }, 0.01);

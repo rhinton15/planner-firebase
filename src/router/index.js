@@ -32,6 +32,16 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/terms",
+      component: () => import("../pages/TermsAndConditions.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/privacy",
+      component: () => import("../pages/PrivacyPolicy.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/admin/managePatterns",
       component: () => import("../pages/Admin/ManagePatterns.vue"),
       meta: { requiresAdmin: true },

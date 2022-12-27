@@ -3,10 +3,11 @@
     <div v-if="open" class="backdrop" @click="$emit('close')"></div>
     <transition name="modal">
       <dialog open v-if="open">
-        <div class="position-absolute top-0 end-0 p-3">
+        <div class="position-absolute top-0 end-0 p-3" style="z-index: 10">
           <button
             type="button"
-            class="btn-close"
+            class="btn-close bg-white"
+            style="z-index: 10; border-radius: 12px"
             aria-label="Close"
             @click="$emit('close')"
           ></button>

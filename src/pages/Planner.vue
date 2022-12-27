@@ -18,8 +18,15 @@
               <font-awesome-icon icon="fa-solid fa-circle-question" />
             </button>
             <button
+              v-if="saveButton.disabled"
               :class="`btn border-0`"
-              :disabled="saveButton.disabled"
+              :title="saveButton.text"
+            >
+              <font-awesome-icon :icon="`fa-solid fa-${saveButton.icon}`" />
+            </button>
+            <button
+              v-else
+              :class="`btn border-0`"
               @click="saveChanges(currentWeek)"
               :title="saveButton.text"
             >
@@ -168,6 +175,7 @@
                 :key="sticker"
                 v-model="sticker.properties"
                 :snapHeight="cellHeight"
+                :offset="offset"
                 @delete="deleteSticker"
                 @update:focus="(focus) => updateFocus(focus, sticker)"
               >
@@ -266,76 +274,97 @@
     </div>
 
     <base-modal :open="showingTutorial" @close="toggleTutorial">
-      <img
-        src="@/assets/tutorial.jpg"
-        class="w-100 h-100"
-        style="object-fit: contain"
-      />
+      <div class="h-100 overflow-auto">
+        <h3>Help Menu</h3>
+        <p>
+          This website works best on tablets and computers, but can be used on
+          mobile devices if desired.
+        </p>
+        <hr />
+        <p>The screenshot below highlights the many available features.</p>
+        <img
+          src="@/assets/tutorial.jpg"
+          class="w-100"
+          style="object-fit: contain"
+        />
+      </div>
     </base-modal>
 
     <base-modal :open="showingTemplate" @close="setShowingTemplate(null)">
-      <!-- <calendar-select
-        :modelValue="currentWeek"
-        @update:modelValue="loadTemplate"
-      ></calendar-select> -->
-      <div class="h-100 d-flex flex-column">
-        <ul class="nav justify-content-center">
-          <li class="nav-item m-2">
-            <button
-              :class="`underline underline-primary ${
-                showingTemplate === 'all' ? 'active' : ''
-              }`"
-              @click="setShowingTemplate('all')"
-            >
-              All
-            </button>
-          </li>
-          <li class="nav-item m-2">
-            <button
-              :class="`underline underline-primary ${
-                showingTemplate === 'mine' ? 'active' : ''
-              }`"
-              @click="setShowingTemplate('mine')"
-            >
-              Mine
-            </button>
-          </li>
-        </ul>
-        <div>
-          <button
-            class="btn btn-outline-primary m-1"
-            @click="saveTemplate(false)"
-          >
-            Save New Template
-          </button>
-          <button
-            v-if="templates.some((temp) => temp.id === templateId)"
-            class="btn btn-outline-primary m-1"
-            @click="saveTemplate(true)"
-          >
-            Update Existing Template
-          </button>
-          <!-- <img :src="output" style="width: 250px" /> -->
+      <div class="d-flex flex-md-row flex-column h-100" style="gap: 10px">
+        <div class="card mx-auto" style="min-width: auto">
+          <div class="card-body">
+            <label class="card-title">Copy from another week</label>
+            <calendar-select
+              :modelValue="currentWeek"
+              @update:modelValue="copyWeek"
+            ></calendar-select>
+          </div>
         </div>
-        <div class="flex-fill overflow-auto">
-          <div class="d-flex flex-wrap">
-            <button
-              class="btn btn-outline-light m-2 position-relative"
-              v-for="template in templates.filter(
-                (temp) => showingTemplate === 'all' || temp.mine
-              )"
-              :key="template.id"
-              @click="loadTemplate(template)"
-            >
+        <div
+          class="card d-flex flex-column overflow-auto"
+          style="min-width: auto"
+        >
+          <div class="card-body">
+            <label class="card-title">Load or save a template</label>
+            <ul class="nav justify-content-center">
+              <li class="nav-item m-2">
+                <button
+                  :class="`underline underline-primary ${
+                    showingTemplate === 'all' ? 'active' : ''
+                  }`"
+                  @click="setShowingTemplate('all')"
+                >
+                  All
+                </button>
+              </li>
+              <li class="nav-item m-2">
+                <button
+                  :class="`underline underline-primary ${
+                    showingTemplate === 'mine' ? 'active' : ''
+                  }`"
+                  @click="setShowingTemplate('mine')"
+                >
+                  Mine
+                </button>
+              </li>
+            </ul>
+            <div>
               <button
-                v-if="template.mine"
-                class="btn text-dark position-absolute top-0 end-0"
-                @click.stop="deleteTemplate(template)"
+                class="btn btn-outline-primary m-1"
+                @click="saveTemplate(false)"
               >
-                <font-awesome-icon icon="fa-solid fa-trash" />
+                Save New Template
               </button>
-              <img :src="template.url" style="width: 200px" />
-            </button>
+              <button
+                v-if="templates.some((temp) => temp.id === templateId)"
+                class="btn btn-outline-primary m-1"
+                @click="saveTemplate(true)"
+              >
+                Update Existing Template
+              </button>
+            </div>
+            <div class="flex-fill overflow-auto">
+              <div class="d-flex flex-wrap">
+                <button
+                  class="btn btn-outline-light m-2 position-relative"
+                  v-for="template in templates.filter(
+                    (temp) => showingTemplate === 'all' || temp.mine
+                  )"
+                  :key="template.id"
+                  @click="loadTemplate(template)"
+                >
+                  <button
+                    v-if="template.mine"
+                    class="btn text-dark position-absolute top-0 end-0"
+                    @click.stop="deleteTemplate(template)"
+                  >
+                    <font-awesome-icon icon="fa-solid fa-trash" />
+                  </button>
+                  <img :src="template.url" style="width: 200px" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -434,6 +463,10 @@ export default {
       todos: [],
       stickers: [],
       position: {
+        top: 0,
+        left: 0,
+      },
+      offset: {
         top: 0,
         left: 0,
       },
@@ -538,6 +571,12 @@ export default {
     //     this.editingHeader = false;
     //   }
     // });
+
+    $(window).resize(() => {
+      this.updateOffset();
+    });
+
+    this.updateOffset();
   },
   // https://stackoverflow.com/questions/34283891/vue-js-watch-array-of-objects
   watch: {
@@ -601,7 +640,7 @@ export default {
   methods: {
     addStickerModal() {
       this.showModal({
-        pos: { y: 500, x: 500 },
+        pos: { x: 0, y: 0 },
         dim: {
           w: 174,
           h: 290,
@@ -679,7 +718,7 @@ export default {
       let newLength = this.stickers.push({
         properties: {
           // text: "To Do 1\nTo Do 2\nTo Do 3",
-          items: [],
+          items: [{ text: "" }],
           pos: this.modalProps.pos,
           dim: {
             w: "174", //"720",
@@ -902,6 +941,20 @@ export default {
       await this.saveChanges(this.currentWeek);
       this.setShowingTemplate(null);
     },
+    async copyWeek(fromWeek) {
+      let existingStickers = this.stickers;
+      await this.loadPlanner(
+        auth.currentUser.uid,
+        "planners",
+        this.plannerId,
+        "plans",
+        fromWeek
+      );
+      this.stickers = this.stickers.concat(existingStickers);
+      // this.stickers = existingStickers.concat(this.stickers);
+      await this.saveChanges(this.currentWeek);
+      this.setShowingTemplate(null);
+    },
     async loadPlanner(...args) {
       this.showingCalendar = false;
       this.focusedSticker = null;
@@ -1028,7 +1081,11 @@ export default {
       }
     },
     async clearPlanner() {
-      if (confirm("Clear all stickers from planner?")) {
+      if (
+        confirm(
+          "Are you sure you want to clear all text and stickers from the current calendar? This cannot be undone."
+        )
+      ) {
         await deleteDoc(
           doc(
             db,
@@ -1093,6 +1150,15 @@ export default {
     toggleCalendar() {
       this.showingCalendar = !this.showingCalendar;
     },
+    updateOffset() {
+      var cell1 = document.getElementById("1-1"); // TODO: fix this
+      // https://stackoverflow.com/questions/46451319/access-el-inside-a-computed-property
+      // https://stackoverflow.com/questions/11634770/get-position-offset-of-element-relative-to-a-parent-container
+      this.offset = {
+        top: cell1.offsetTop,
+        left: cell1.offsetLeft,
+      };
+    },
   },
   computed: {
     plannerDocument() {
@@ -1102,10 +1168,10 @@ export default {
           .map((item) => item.properties)
           .filter(
             (item) =>
-              item.text !== "" ||
-              item.items?.length > 0 ||
-              item.type !== "" ||
-              item.icon !== ""
+              item.text ||
+              item.items?.some((todoItem) => todoItem.text) ||
+              item.type ||
+              item.icon
           ),
       };
     },

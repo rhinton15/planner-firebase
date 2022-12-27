@@ -29,14 +29,17 @@
           @change="updateModelValue({ colors: colors })"
         />
       </sticker-property>
-      <sticker-property title="Tranparency">
+      <sticker-property title="Transparency">
         <input
           type="number"
           step="0.01"
-          class="form-control form-control-small m-auto text-center"
-          :value="modelValue.op || 1"
-          @input="numberInput($event, null, 'op', 1, 2, 0, 1)"
+          class="form-control form-control-small m-auto text-center d-inline-block"
+          :value="Math.round((1 - (modelValue.op || 1)) * 100)"
+          @input="
+            numberInput($event, null, 'op', 1, 2, 0, 1, (x) => 1 - x / 100)
+          "
         />
+        <label class="px-2">%</label>
         <!-- (event) => {
               if (
                 !event.target.value.endsWith('.') &&
@@ -197,6 +200,30 @@
       </div>
     </sticker-property-group>
     <sticker-property-group title="Rotate">
+      <!-- <div
+        class="d-inline-flex align-items-center justify-content-center mt-2 position-relative"
+        style="
+          width: 64px;
+          height: 64px;
+          border: 3px solid grey;
+          border-radius: 32px;
+        "
+      >
+        {{ modelValue.rot || 0 }}&#176;
+        <div
+          class="position-absolute top-0 start-50"
+          :style="`
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: black;
+            top: ${29 * (Math.cos((modelValue.rot / 180) * Math.PI) + 1) - 5}px;
+            left: ${
+              29 * (Math.sin((modelValue.rot / 180) * Math.PI) + 1) - 5
+            }px;
+          `"
+        ></div>
+      </div> -->
       <sticker-property title="Degrees">
         <input
           type="number"

@@ -157,30 +157,41 @@
           ></rect>
         </svg>
       </div>
-      <div class="grid-text text-white text-start">
+      <div class="grid-text text-white text-start mb-2">
         <p
-          for=""
           class="pt-3"
           style="font-family: 'Oooh Baby'; font-weight: 700; font-size: 40px"
         >
           Welcome to Fun Day Planners!
         </p>
-        <p for="" style="font-family: 'Unkempt'; font-size: 20px">
+        <p style="font-family: 'Unkempt'; font-size: 20px" v-if="!currentUser">
           Sign up to start planning your fun today (btw it's free)
         </p>
         <div class="text-center">
-          <button class="btn btn-signup" @click="$router.push('/login')">
+          <button
+            class="btn btn-signup"
+            @click="$router.push('/login')"
+            v-if="!currentUser"
+          >
             Sign Up
+          </button>
+          <!-- #eae2d0 -->
+        </div>
+        <p style="font-family: 'Unkempt'; font-size: 20px" v-if="currentUser">
+          Let's start planning your fun :)
+        </p>
+        <div class="text-center">
+          <button
+            class="btn btn-signup"
+            @click="$router.push('/planner')"
+            v-if="currentUser"
+          >
+            Go to Planner
           </button>
           <!-- #eae2d0 -->
         </div>
       </div>
       <div class="grid-image">
-        <!-- :class="`w-100 ${showVideo ? '' : 'd-none'}`" -->
-        <!-- class="w-100" -->
-        <!-- width="560"
-          height="315" -->
-        <!-- style="aspect-ratio: 112/63" -->
         <iframe
           class="w-100"
           style="aspect-ratio: 99/63"
@@ -190,19 +201,6 @@
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
         ></iframe>
-        <!-- <video
-          class="w-100"
-          autoplay
-          loop
-          muted
-          playsinline
-          playbackRate="2.0"
-          @loadeddata="showVideo = true"
-        >
-          <source src="../assets/tutorial.mp4" type="video/mp4" />
-          This browser does not display the video tag.
-        </video> -->
-        <!-- <img class="w-100" src="@/assets/tutorial.jpg" alt="" /> -->
       </div>
     </div>
 
@@ -220,34 +218,32 @@
     <div class="mx-5 mb-5">
       <carousel></carousel>
     </div>
+
+    <div
+      class="w-100 mt-4 text-white p-3 d-flex"
+      style="background-color: #28415d"
+    >
+      <div class="me-auto p-2 d-inline-block">Fun Day Planners, LLC</div>
+      <div class="p-2 d-inline-block">
+        <a href="/terms" class="text-white">Terms and Conditions</a>
+      </div>
+      <div class="p-2 d-inline-block">
+        <a href="/privacy" class="text-white">Privacy Policy</a>
+      </div>
+    </div>
   </div>
-  <!-- <div>
-    Hello {{ getCurrentUser().displayName }}
-    <button class="btn btn-outline-primary" @click="logout">Logout</button>
-  </div> -->
 </template>
 
 <script>
 import Carousel from "../components/Carousel.vue";
 
-// const fb = require("./../../firebaseConfig.js");
-import { signOut } from "firebase/auth";
-import { getAuth } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default {
   components: { Carousel },
-  data() {
-    return {
-      showVideo: false,
-    };
-  },
-  methods: {
-    getCurrentUser() {
-      return getAuth().currentUser;
-    },
-    async logout() {
-      await signOut(getAuth());
-      this.$router.push("/login");
+  computed: {
+    currentUser() {
+      return auth.currentUser;
     },
   },
 };

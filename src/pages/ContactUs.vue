@@ -1,7 +1,10 @@
 <template>
   <div class="container text-start">
     <h1 class="text-center">Contact Us</h1>
-
+    <p>
+      We're excited to hear from you! Any questions, comments, suggestions, or
+      issues are welcome. Thanks for taking the time to share your thoughts :)
+    </p>
     <div class="form-group mb-2">
       <label for="subject" class="fs-5">Subject</label>
       <input id="subject" class="form-control" v-model="subject" />

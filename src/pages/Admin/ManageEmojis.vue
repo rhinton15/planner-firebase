@@ -11,11 +11,28 @@
       <button class="btn btn-outline-primary" @click="mode = 'select'">
         Select
       </button>
+      <label for="category">Assigning to category:</label>
       <select
         name="category"
         id="category"
         class="form-select"
         v-model="currentCategory"
+      >
+        <option value=""></option>
+        <option
+          v-for="category in categories"
+          :key="category"
+          :value="category"
+        >
+          {{ category }}
+        </option>
+      </select>
+      <label for="category">Also showing category:</label>
+      <select
+        name="category2"
+        id="category2"
+        class="form-select"
+        v-model="alsoShowCategory"
       >
         <option value=""></option>
         <option
@@ -63,6 +80,7 @@ export default {
       emojiObj: {},
       mode: "categorize",
       currentCategory: "",
+      alsoShowCategory: "",
       categories: [
         "breakfast",
         "food",
@@ -95,6 +113,11 @@ export default {
         "school",
         "work",
         "money",
+        "game",
+        "tool",
+        "bubble",
+        "kitchen",
+        "mail",
       ],
     };
   },
@@ -139,6 +162,7 @@ export default {
         return Object.keys(this.emojiObj).filter(
           (code) =>
             this.emojiObj[code].includes(this.currentCategory) ||
+            this.emojiObj[code].includes(this.alsoShowCategory) ||
             this.emojiObj[code].length === 0
         );
       }
@@ -148,6 +172,16 @@ export default {
     const docRef = doc(db, "stickers", "icon");
     var emojiDoc = await getDoc(docRef);
     this.emojiObj = emojiDoc.data();
+
+    // Object.keys(this.emojiObj)
+    //   .filter((code) => this.emojiObj[code].includes("games"))
+    //   .forEach(async (code) => {
+    //     console.log("code");
+    //     this.emojiObj[code] = ["game"];
+    //     const newValue = {};
+    //     newValue[code] = ["game"];
+    //     await updateDoc(doc(db, "stickers", "icon"), newValue);
+    //   });
   },
 };
 </script>

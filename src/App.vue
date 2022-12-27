@@ -110,6 +110,18 @@ li {
   color: var(--bs-primary) !important;
 }
 
+.underline-secondary {
+  color: var(--bs-secondary) !important;
+}
+
+.underline-secondary:hover,
+.underline-secondary:active,
+.underline-secondary.active,
+.underline-secondary.router-link-active {
+  border-bottom-color: var(--bs-secondary) !important;
+  color: var(--bs-secondary) !important;
+}
+
 @media print {
   #app {
     margin-top: 0px;
