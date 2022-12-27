@@ -172,16 +172,6 @@ export default {
     const docRef = doc(db, "stickers", "icon");
     var emojiDoc = await getDoc(docRef);
     this.emojiObj = emojiDoc.data();
-
-    // Object.keys(this.emojiObj)
-    //   .filter((code) => this.emojiObj[code].includes("games"))
-    //   .forEach(async (code) => {
-    //     console.log("code");
-    //     this.emojiObj[code] = ["game"];
-    //     const newValue = {};
-    //     newValue[code] = ["game"];
-    //     await updateDoc(doc(db, "stickers", "icon"), newValue);
-    //   });
   },
 };
 </script>

@@ -70,15 +70,4 @@ dialog {
     transform: scale(1);
   }
 }
-
-@media (min-width: 500px) {
-  dialog {
-    /* width: 96vw;
-    left: 2vw; */
-    /* width: 30rem;
-    left: calc(50% - 15rem); */
-    /* width: 50rem;
-    left: calc(50% - 25rem); */
-  }
-}
 </style>

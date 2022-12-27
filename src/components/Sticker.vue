@@ -107,7 +107,6 @@
 
 <script>
 import $ from "jquery";
-// import { debounce } from "lodash";
 
 export default {
   props: ["id", "modelValue", "snapHeight", "offset"],
@@ -156,12 +155,6 @@ export default {
         e.preventDefault();
       }
     },
-    // updateModelValue: debounce(function (newValues) {
-    //   this.$emit("update:modelValue", {
-    //     ...this.modelValue,
-    //     ...newValues,
-    //   });
-    // }, 1000),
     deleteSticker() {
       this.isFocused = false;
       this.$emit("delete", this.id);
@@ -231,7 +224,6 @@ export default {
     var moving = false;
     var resizing = false;
     var rotateHandle = $(this.$refs.rotate);
-    var dragHandle = $(this.$refs.drag);
     var resizeHandle = $(this.$refs.resize);
     var sticker = $(this.$refs.sticker);
     var startPos;
@@ -265,29 +257,6 @@ export default {
       }
 
       startShift = this.modelValue;
-    });
-    dragHandle.on("mousedown touchstart", (e) => {
-      moving = true;
-      startPos = {
-        x: e.clientX,
-        y: e.clientY,
-      };
-
-      if (
-        e.type == "touchstart" ||
-        e.type == "touchmove" ||
-        e.type == "touchend" ||
-        e.type == "touchcancel"
-      ) {
-        var evt = typeof e.originalEvent === "undefined" ? e : e.originalEvent;
-        var touch = evt.touches[0] || evt.changedTouches[0];
-        startPos = {
-          x: touch.pageX,
-          y: touch.pageY,
-        };
-      }
-
-      startShift = this.modelValue.pos;
     });
     sticker.on("mousedown touchstart", (e) => {
       scale = element.getBoundingClientRect().width / element.offsetWidth;
@@ -328,7 +297,6 @@ export default {
       }
       e.stopPropagation();
 
-      // var updateValue = debounce(() => {
       var ePos = { x: e.clientX, y: e.clientY };
       if (
         e.type == "touchstart" ||
@@ -400,10 +368,6 @@ export default {
           h: Math.max(Math.round(newHeight), 5).toString(),
         };
 
-        // if (this.modelValue.dim.r) {
-        //   newDimensions.r = this.modelValue.dim.r;
-        // }
-
         let newPosition = this.modelValue.pos;
 
         const rotation =
@@ -453,9 +417,6 @@ export default {
           pos: this.calculatePosition(newPosition.x, newPosition.y),
         });
       }
-      // }, 0.01);
-
-      // updateValue();
     });
 
     $(document).on("mousedown touchstart", (e) => {

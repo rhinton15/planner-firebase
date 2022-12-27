@@ -32,7 +32,7 @@
       <sticker-property title="Transparency">
         <input
           type="number"
-          step="0.01"
+          step="1"
           class="form-control form-control-small m-auto text-center d-inline-block"
           :value="Math.round((1 - (modelValue.op || 1)) * 100)"
           @input="
@@ -40,26 +40,6 @@
           "
         />
         <label class="px-2">%</label>
-        <!-- (event) => {
-              if (
-                !event.target.value.endsWith('.') &&
-                event.target.value != ''
-              ) {
-                let opacity = Math.round(
-                  Math.max(Math.min(parseFloat(event.target.value), 1), 0),
-                  2
-                );
-                updateModelValue({
-                  ...(opacity != 1 && { op: opacity }),
-                });
-              }
-            } -->
-        <!-- @input="
-            updateModelValue({
-              op: Math.max(Math.min($event.target.value, 1), 0),
-            })
-          " -->
-        <!-- @change="updateModelValue({ op: parseFloat($event.target.value) })" -->
       </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Font" v-if="modelValue.font != null">
@@ -165,6 +145,7 @@
       <sticker-property title="Height" v-if="modelValue.dim.h != null">
         <input
           type="number"
+          step="0.5"
           class="form-control form-control-small m-auto text-center"
           :value="(Math.round((modelValue.dim.h / 58) * 100) / 100).toString()"
           @input="
@@ -200,30 +181,6 @@
       </div>
     </sticker-property-group>
     <sticker-property-group title="Rotate">
-      <!-- <div
-        class="d-inline-flex align-items-center justify-content-center mt-2 position-relative"
-        style="
-          width: 64px;
-          height: 64px;
-          border: 3px solid grey;
-          border-radius: 32px;
-        "
-      >
-        {{ modelValue.rot || 0 }}&#176;
-        <div
-          class="position-absolute top-0 start-50"
-          :style="`
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: black;
-            top: ${29 * (Math.cos((modelValue.rot / 180) * Math.PI) + 1) - 5}px;
-            left: ${
-              29 * (Math.sin((modelValue.rot / 180) * Math.PI) + 1) - 5
-            }px;
-          `"
-        ></div>
-      </div> -->
       <sticker-property title="Degrees">
         <input
           type="number"
@@ -263,11 +220,12 @@
         ></sticker-property-button>
       </sticker-property>
     </sticker-property-group>
-    <sticker-property-group title="Align" v-if="modelValue.align != null">
+    <sticker-property-group title="Align" v-if="modelValue.text != null">
       <sticker-property>
         <sticker-property-button
           title="align left"
           icon="fa-solid fa-align-left"
+          :class="`${modelValue.align === 'start' ? 'active' : ''}`"
           @click="
             updateModelValue({
               align: 'start',
@@ -279,6 +237,7 @@
         <sticker-property-button
           title="align center"
           icon="fa-solid fa-align-center"
+          :class="`${modelValue.align === 'center' ? 'active' : ''}`"
           @click="
             updateModelValue({
               align: 'center',
@@ -290,6 +249,7 @@
         <sticker-property-button
           title="align right"
           icon="fa-solid fa-align-right"
+          :class="`${modelValue.align === 'end' ? 'active' : ''}`"
           @click="
             updateModelValue({
               align: 'end',
@@ -313,7 +273,6 @@ export default {
   props: ["id", "modelValue"],
   emits: [
     "update:modelValue",
-    // "updateModelValue",
     "moveToFront",
     "moveUp",
     "moveDown",
@@ -366,7 +325,7 @@ export default {
       transform = (x) => x
     ) {
       if (
-        !event.target.value.endsWith(".") &&
+        !event.target.value.match(/\.0*$/) &&
         event.target.value != "" &&
         event.target.value != "-0"
       ) {
@@ -482,9 +441,6 @@ export default {
       this.colors = this.modelValue.colors || [];
     },
   },
-  // beforeUpdate() {
-  //   this.colors = this.modelValue.colors || [];
-  // },
   mounted() {
     this.colors = this.modelValue.colors || [];
     $(this.$refs.settings).on("mousedown touchstart", (e) => {

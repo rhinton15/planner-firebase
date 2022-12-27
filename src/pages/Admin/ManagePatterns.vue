@@ -340,8 +340,6 @@ export default {
         stickerProps.ratio = this.dimensions.height / this.dimensions.width;
       }
 
-      // await setDoc(doc(db, "stickers", this.fileName), stickerProps);
-
       let newValue = {};
       newValue[this.fileName] = stickerProps;
       await updateDoc(doc(db, "stickers", "svg"), newValue);

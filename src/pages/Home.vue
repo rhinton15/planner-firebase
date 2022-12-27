@@ -1,32 +1,4 @@
 <template>
-  <!-- <div class="bg-light">
-    <div style="height: 15vh"></div>
-    <div
-      class="bg-primary w-100 position-relative text-start p-4"
-      style="height: 40vh; opacity: 80%"
-    >
-      <div class="position-absolute top-0 start-0 text-white fs-2 p-4">
-        <p for="" class="fs-2">Welcome to <br />Fun Day Planners!</p>
-        <p for="" class="fs-6">Get started planning your fun today</p>
-      </div>
-      <img
-        class="position-absolute top0 end0"
-        style="width: 65%; top: -40px; right: 20px"
-        src="@/assets/tutorial.jpg"
-        alt=""
-      />
-    </div>
-  </div> -->
-  <!-- <div class="bg-light">
-    <div class="row m-0">
-      <div class="col-4 text-white text-start p-3">
-        <p for="" class="fs-2">Welcome to Fun Day Planners!</p>
-        <p for="" class="fs-6">Get started planning your fun today</p>
-      </div>
-      <img class="col-8" src="@/assets/tutorial.jpg" alt="" />
-      <div class="bg-primary w-100 h-50"></div>
-    </div>
-  </div> -->
   <div>
     <div class="grid pt-5">
       <div class="grid-banner">

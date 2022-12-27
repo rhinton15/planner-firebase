@@ -48,11 +48,6 @@
         </div>
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-            <!-- <li class="nav-item px-2 my-1">
-              <router-link class="nav-link underline p-0" to="/"
-                >Home</router-link
-              >
-            </li> -->
             <li class="nav-item px-2 my-1" v-if="isAuth">
               <router-link class="nav-link underline p-0" to="/planner"
                 >Planner</router-link
@@ -111,8 +106,8 @@ export default {
           .then((idTokenResult) => {
             this.isAdmin = idTokenResult.claims.admin;
           })
-          .catch((error) => {
-            console.log(error);
+          .catch(() => {
+            // console.log(error);
           });
       } else {
         this.isAdmin = false;

@@ -1,7 +1,6 @@
 <template>
   <base-modal :open="props !== null" @close="hideModal">
     <div class="h-100 overflow-auto">
-      <!-- ADD STICKER -->
       <div class="row mx-0">
         <div class="col col-sm-6 mb-4">
           <button class="card h-100 w-100" @click="addText">
@@ -28,11 +27,6 @@
               <h5 class="card-title">To Do List</h5>
               <p class="card-text">
                 <to-do-list :modelValue="toDoDemo" :modal="true"></to-do-list>
-                <!-- <ul class="fs-1 w-100" style="font-family: 'Waiting for the Sunrise';">
-                <li>Cook</li>
-                <li>Clean</li>
-                <li>Shower</li>
-              </ul> -->
               </p>
             </div>
           </button>
@@ -112,9 +106,7 @@
                     line-height: 50px;
                     font-family: 'Noto Color Emoji';
                   `"
-                        @click="
-                          addIcon(icon, [], { w: '100', h: '100', r: '1' })
-                        "
+                        @click="addIcon(icon, [], { w: '87', h: '87', r: '1' })"
                       ></div>
                     </div>
                   </div>

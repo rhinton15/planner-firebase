@@ -177,7 +177,6 @@ tr.week:hover {
 
 .month.selected,
 tr.week.selected {
-  /* background-color: #dddddd; */
   background-color: #cdcdcd;
 }
 

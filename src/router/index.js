@@ -1,7 +1,6 @@
 // https://learnvue.co/tutorials/vue-firebase-authentication
 
 import { createRouter, createWebHistory } from "vue-router";
-// const fb = require("./../../firebaseConfig.js");
 import { getAuth } from "firebase/auth";
 
 const router = createRouter({
@@ -10,11 +9,6 @@ const router = createRouter({
     {
       path: "/",
       component: () => import("../pages/Home.vue"),
-    },
-    {
-      path: "/profile",
-      component: () => import("../pages/Profile.vue"),
-      meta: { requiresAuth: true },
     },
     {
       path: "/login",
@@ -86,8 +80,8 @@ router.beforeEach((to, from, next) => {
           next("/planner");
         }
       })
-      .catch((error) => {
-        console.log(error);
+      .catch(() => {
+        // console.log(error);
       });
   } else next();
 });

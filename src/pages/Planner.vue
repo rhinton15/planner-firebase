@@ -5,13 +5,6 @@
         class="d-flex px-2 flex-column flex-md-row"
         style="height: calc(100vh - 200px)"
       >
-        <!-- <input
-          type="number"
-          step="0.01"
-          class="form-control"
-          :value="testNum"
-          @input="updateTestNum"
-        /> -->
         <div class="d-flex flex-column">
           <div class="d-flex">
             <button class="btn" title="help" @click="toggleTutorial">
@@ -302,7 +295,7 @@
           </div>
         </div>
         <div
-          class="card d-flex flex-column overflow-auto"
+          class="card flex-fill d-flex flex-column overflow-auto"
           style="min-width: auto"
         >
           <div class="card-body">
@@ -390,10 +383,6 @@
       @removeFocus="editingHeader = false"
     ></planner-header-settings>
 
-    <!-- v-model="focusedSticker.properties" -->
-    <!-- @update:modelValue="printNewVal" -->
-    <!-- @updateModelValue="printNewVal"
-      @test="printTest" -->
     <sticker-properties
       v-if="focusedSticker != null"
       :id="stickers.findIndex((sticker) => sticker === focusedSticker)"
@@ -474,18 +463,8 @@ export default {
       pendingChanges: false,
       output: "",
       headerSettings: {
-        m: {
-          // color: "#000000",
-          // family: "Montserrat",
-          // size: 40,
-          // bold: false,
-        },
-        d: {
-          // color: "#000000",
-          // family: "Amatic SC",
-          // size: 40,
-          // bold: true,
-        },
+        m: {},
+        d: {},
       },
       editingHeader: false,
       showingTutorial: false,
@@ -564,13 +543,6 @@ export default {
         this.saveChanges(this.currentWeek);
       }
     }, 60000); // save once per minute
-
-    // var header = $(this.$refs.header);
-    // $(document).on("mousedown touchstart", (e) => {
-    //   if ($(header).parent().has(e.target).length == 0) {
-    //     this.editingHeader = false;
-    //   }
-    // });
 
     $(window).resize(() => {
       this.updateOffset();
@@ -717,7 +689,6 @@ export default {
     addToDo() {
       let newLength = this.stickers.push({
         properties: {
-          // text: "To Do 1\nTo Do 2\nTo Do 3",
           items: [{ text: "" }],
           pos: this.modalProps.pos,
           dim: {
@@ -739,18 +710,8 @@ export default {
     },
     addSticker(sticker) {
       this.stickers.push({
-        // type: sticker.type,
         properties: {
-          // position: sticker.position,
-          // colors: sticker.colors,
           pos: this.modalProps.pos,
-          // border: {
-          //   on: false,
-          //   inset: 5,
-          //   width: 5,
-          //   style: "solid",
-          //   color: "#FFFFFF",
-          // },
           ...sticker,
         },
       });
@@ -788,10 +749,6 @@ export default {
     },
     updateFocus(focus, sticker) {
       this.focusedSticker = focus ? sticker : null;
-      // if (focus) {
-      //   this.focusedSticker.properties.op =
-      //     this.focusedSticker.properties.op || 1;
-      // }
     },
     deleteSticker(index) {
       this.stickers.splice(index, 1);
@@ -827,23 +784,6 @@ export default {
           this.templates.findIndex((item) => item.id === this.templateId),
           1
         );
-
-        // const [existingTemplate] = this.templates.splice(
-        //   this.templates.findIndex((item) => item.id === this.templateId),
-        //   1
-        // );
-
-        // version = existingTemplate.version + 1;
-
-        // Delete the photo for previous version of template
-        // deleteObject(
-        //   ref(
-        //     storage,
-        //     `templates/${auth.currentUser.uid}/${this.templateId}_${
-        //       version - 1
-        //     }.jpeg`
-        //   )
-        // );
       } else {
         // add new
         let docRef = await addDoc(
@@ -859,12 +799,6 @@ export default {
       this.$nextTick(async () => {
         this.output = (await html2canvas(el)).toDataURL("image/jpeg");
 
-        // const storageRef = ref(
-        //   storage,
-        //   `templates/${auth.currentUser.uid}/${this.templateId}_${
-        //     version - 1
-        //   }.jpeg`
-        // );
         const storageRef = ref(
           storage,
           `templates/${auth.currentUser.uid}/${this.templateId}.jpeg`
@@ -886,7 +820,6 @@ export default {
               mine: true,
               url,
             });
-            // this.templates.unshift({ id: this.templateId, url, version });
           },
           "image/jpeg",
           0.1
@@ -895,7 +828,6 @@ export default {
         this.screenShot = false;
         this.setShowingTemplate(null);
       });
-      // this.output = (await html2canvas(el)).toDataURL("image/jpeg", 0.1);
     },
     async deleteTemplate(template) {
       if (confirm("Are you sure you want to delete this template?")) {
@@ -922,10 +854,6 @@ export default {
         items.forEach(async (item) => {
           this.templates.push({
             id: item.name.replace(/\..*$/, ""),
-            // id: item.name.replace(/_.*$/, ""),
-            // version: parseInt(
-            //   item.name.replace(/^.*_/, "").replace(/\..*$/, "")
-            // ),
             uid: prefix.name,
             url: await getDownloadURL(item),
             mine,
@@ -936,6 +864,7 @@ export default {
     async loadTemplate(template) {
       let existingStickers = this.stickers;
       await this.loadPlanner(template.uid, "templates", template.id);
+      // await this.loadPlanner(template.uid, "templates", "wEAvudDlh07MT577xImd");
       // this.stickers = this.stickers.concat(existingStickers);
       this.stickers = existingStickers.concat(this.stickers);
       await this.saveChanges(this.currentWeek);
@@ -951,7 +880,6 @@ export default {
         fromWeek
       );
       this.stickers = this.stickers.concat(existingStickers);
-      // this.stickers = existingStickers.concat(this.stickers);
       await this.saveChanges(this.currentWeek);
       this.setShowingTemplate(null);
     },
@@ -965,7 +893,6 @@ export default {
 
       if (this.setupComplete && args[args.length - 1]) {
         const docRef = doc(db, "users", ...args);
-        // const docRef = doc(db, "users", uid, collection, id);
         const docSnap = await getDoc(docRef);
 
         var res = docSnap.data();
@@ -973,107 +900,15 @@ export default {
         this.pageLoaded = true;
 
         this.templateId = res?.temp || null;
-        this.texts = res?.text || [];
-        this.todos = res?.todo || [];
         this.stickers = res?.stickers || [];
         this.headerSettings = res?.header || {
-          m: {
-            // color: "#000000",
-            // family: "Montserrat",
-            // size: 40,
-            // bold: false,
-          },
-          d: {
-            // color: "#000000",
-            // family: "Amatic SC",
-            // size: 40,
-            // bold: true,
-          },
+          m: {},
+          d: {},
         };
 
-        this.texts = this.texts.map((text) => {
-          return { properties: { ...text.properties, text: text.text } };
-        });
-        this.stickers = this.stickers.concat(this.texts).concat(this.todos);
-        this.texts = null;
-        this.todos = null;
-
         this.stickers = this.stickers.map((sticker) => {
-          return { properties: sticker.properties || sticker };
+          return { properties: sticker };
         });
-
-        // this.stickers = this.stickers.filter(
-        //   (sticker) => sticker.properties.type !== "\u26BD"
-        // );
-
-        // this.headerSettings = { m: {}, d: {} };
-
-        this.stickers.forEach((sticker) => {
-          if (sticker.properties.dimensions) {
-            sticker.properties.dim = {
-              w: sticker.properties.dimensions.width,
-              h: sticker.properties.dimensions.height,
-              ...(sticker.properties.dimensions.ratio && {
-                r: sticker.properties.dimensions.ratio,
-              }),
-            };
-
-            delete sticker.properties.dimensions;
-          }
-
-          if (sticker.properties.position) {
-            sticker.properties.pos = {
-              x: sticker.properties.position.left,
-              y: sticker.properties.position.top,
-            };
-
-            delete sticker.properties.position;
-          }
-        });
-
-        this.stickers.forEach((sticker) => {
-          if (sticker.properties.border?.on) {
-            sticker.properties.bord = {
-              w: sticker.properties.border.width,
-              in: sticker.properties.border.inset,
-              sty: sticker.properties.border.style,
-              col: sticker.properties.border.color,
-            };
-          }
-          delete sticker.properties.border;
-          if (sticker.properties.opacity) {
-            if (sticker.properties.opacity != 1) {
-              sticker.properties.op = sticker.properties.opacity;
-            }
-            delete sticker.properties.opacity;
-          }
-          if (sticker.properties.font) {
-            if (sticker.properties.font.bold) {
-              sticker.properties.font.b = true;
-            }
-            delete sticker.properties.font.bold;
-            if (sticker.properties.font.family) {
-              sticker.properties.font.fam = sticker.properties.font.family;
-              delete sticker.properties.font.family;
-            }
-            if (
-              sticker.properties.font.color &&
-              sticker.properties.font.color != "#000000"
-            ) {
-              sticker.properties.font.col = sticker.properties.font.color;
-            }
-            if (sticker.properties.font.col === "#000000") {
-              delete sticker.properties.font.col;
-            }
-            delete sticker.properties.font.color;
-          }
-
-          //   // sticker.properties.scale = sticker.properties.scale || 1;
-          //   sticker.properties.rotation = sticker.properties.rotation || 0;
-          //   sticker.properties.align = sticker.properties.align || "center";
-          //   delete sticker.properties.align;
-          //   // delete sticker.rotation;
-        }); // assign default value
 
         this.$nextTick(() => {
           this.pendingChanges = false;
@@ -1151,7 +986,7 @@ export default {
       this.showingCalendar = !this.showingCalendar;
     },
     updateOffset() {
-      var cell1 = document.getElementById("1-1"); // TODO: fix this
+      var cell1 = document.getElementById("1-1");
       // https://stackoverflow.com/questions/46451319/access-el-inside-a-computed-property
       // https://stackoverflow.com/questions/11634770/get-position-offset-of-element-relative-to-a-parent-container
       this.offset = {
