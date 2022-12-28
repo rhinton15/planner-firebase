@@ -142,7 +142,7 @@
         <div class="text-center">
           <button
             class="btn btn-signup"
-            @click="$router.push('/login')"
+            @click="$router.push('/signup')"
             v-if="!currentUser"
           >
             Sign Up

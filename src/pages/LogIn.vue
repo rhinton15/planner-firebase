@@ -1,54 +1,56 @@
 <template>
-  <section id="firebaseui-auth-container"></section>
+  <div class="container">
+    <form @submit.prevent="login" class="text-start">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" v-model="email" />
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          v-model="password"
+        />
+        <div class="text-end">
+          <a id="forgot-password" href="/forgot">Forgot password?</a>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="text-danger fw-bold mb-3">{{ errorMessage }}</div>
+        <button type="submit" class="btn btn-outline-primary mb-3">
+          Log in
+        </button>
+        <div class="mb-3">New user? <a href="/signup">Sign up</a>.</div>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
-import { EmailAuthProvider } from "firebase/auth";
-import { auth } from "../firebase";
-import * as firebaseui from "firebaseui";
-import "firebaseui/dist/firebaseui.css";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String,
-  },
-  mounted() {
-    // https://github.com/firebase/firebaseui-web/issues/216
-    var ui =
-      firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(auth);
-    var uiConfig = {
-      signInOptions: [EmailAuthProvider.PROVIDER_ID],
-      callbacks: {
-        signInSuccessWithAuthResult: () => {
-          // Handle sign-in.
-          // https://michaelnthiessen.com/redirect-in-vue
-          // https://stackoverflow.com/questions/35914069/how-can-i-get-query-parameters-from-a-url-in-vue-js
-          this.$router.push(this.$route.query.redirect || "/planner");
-          // Return false to avoid redirect.
-          return false;
-        },
-      },
+  data() {
+    return {
+      email: "",
+      password: "",
+      errorMessage: "",
     };
-    ui.start("#firebaseui-auth-container", uiConfig);
+  },
+  methods: {
+    login() {
+      if (!this.email || !this.password) {
+        this.errorMessage = "All fields are required.";
+        return;
+      }
+
+      const auth = getAuth();
+      signInWithEmailAndPassword(auth, this.email, this.password)
+        .then(() => this.$router.push(this.$route.query.redirect || "/planner"))
+        .catch(() => (this.errorMessage = "Invalid email or password."));
+    },
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>

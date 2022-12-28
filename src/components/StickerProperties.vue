@@ -41,7 +41,7 @@
         />
         <label class="px-2">%</label>
       </sticker-property>
-      <sticker-property title="Rotate">
+      <sticker-property title="Rotate" v-if="modelValue.type">
         <input
           type="number"
           class="form-control form-control-small m-auto text-center"

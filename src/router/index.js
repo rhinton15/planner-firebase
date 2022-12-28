@@ -16,6 +16,16 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
+      path: "/signup",
+      component: () => import("../pages/Signup.vue"),
+      meta: { requiresAuth: false },
+    },
+    {
+      path: "/forgot",
+      component: () => import("../pages/ForgotPassword.vue"),
+      meta: { requiresAuth: false },
+    },
+    {
       path: "/planner",
       component: () => import("../pages/Planner.vue"),
       meta: { requiresAuth: true },

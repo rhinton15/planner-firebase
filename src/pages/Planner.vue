@@ -811,20 +811,23 @@ export default {
 
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
         const canvas = await html2canvas(el);
-        canvas.toBlob(
-          async (blob) => {
-            await uploadBytes(storageRef, blob, metadata);
-            const url = await getDownloadURL(storageRef);
-            this.templates.unshift({
-              id: this.templateId,
-              uid: auth.currentUser.uid,
-              mine: true,
-              url,
-            });
-          },
-          "image/jpeg",
-          0.1
-        );
+
+        canvas.toBlob(async (bigBlob) => {
+          await canvas.toBlob(
+            async (blob) => {
+              await uploadBytes(storageRef, blob, metadata);
+              const url = await getDownloadURL(storageRef);
+              this.templates.unshift({
+                id: this.templateId,
+                uid: auth.currentUser.uid,
+                mine: true,
+                url,
+              });
+            },
+            "image/jpeg",
+            30000 / bigBlob.size
+          );
+        }, "image/jpeg");
 
         this.screenShot = false;
         this.setShowingTemplate(null);
