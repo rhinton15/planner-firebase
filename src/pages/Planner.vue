@@ -875,17 +875,19 @@ export default {
       this.setShowingTemplate(null);
     },
     async copyWeek(fromWeek) {
-      let existingStickers = this.stickers;
-      await this.loadPlanner(
-        auth.currentUser.uid,
-        "planners",
-        this.plannerId,
-        "plans",
-        fromWeek
-      );
-      this.stickers = this.stickers.concat(existingStickers);
-      await this.saveChanges(this.currentWeek);
-      this.setShowingTemplate(null);
+      if (fromWeek !== this.currentWeek) {
+        let existingStickers = this.stickers;
+        await this.loadPlanner(
+          auth.currentUser.uid,
+          "planners",
+          this.plannerId,
+          "plans",
+          fromWeek
+        );
+        this.stickers = this.stickers.concat(existingStickers);
+        await this.saveChanges(this.currentWeek);
+        this.setShowingTemplate(null);
+      }
     },
     async loadPlanner(...args) {
       this.showingCalendar = false;

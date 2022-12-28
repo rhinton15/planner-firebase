@@ -37,11 +37,15 @@ const router = createRouter({
     },
     {
       path: "/terms",
-      component: () => import("../pages/TermsAndConditions.vue"),
+      component: () => import("../pages/policies/TermsAndConditions.vue"),
     },
     {
       path: "/privacy",
-      component: () => import("../pages/PrivacyPolicy.vue"),
+      component: () => import("../pages/policies/PrivacyPolicy.vue"),
+    },
+    {
+      path: "/cookies",
+      component: () => import("../pages/policies/CookiePolicy.vue"),
     },
     {
       path: "/admin/managePatterns",
