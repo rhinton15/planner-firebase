@@ -118,10 +118,31 @@ export default {
     },
   },
   computed: {
+    formattedDate() {
+      const parts = this.modelValue.split("-");
+      if (parts.length > 0) {
+        const year = parts[0];
+        if (parts.length > 1) {
+          let month = parts[1];
+          if (month.length == 1) month = "0" + month;
+          if (parts.length > 2) {
+            let day = parts[2];
+            if (day.length == 1) day = "0" + day;
+            return `${year}-${month}-${day}`;
+          } else {
+            return `${year}-${month}`;
+          }
+        } else {
+          return year;
+        }
+      } else {
+        return "";
+      }
+    },
     selectedDate() {
       // https://stackoverflow.com/questions/17545708/parse-date-without-timezone-javascript
-      if (this.modelValue.match(/-/g).length === 1) return null;
-      var date = new Date(this.modelValue);
+      if (this.formattedDate.match(/-/g).length === 1) return null;
+      var date = new Date(this.formattedDate);
       var userTimezoneOffset = date.getTimezoneOffset() * 60000;
       return new Date(date.getTime() + userTimezoneOffset);
     },
@@ -155,7 +176,7 @@ export default {
     },
   },
   created() {
-    var date = new Date(this.modelValue);
+    var date = new Date(this.formattedDate);
     var userTimezoneOffset = date.getTimezoneOffset() * 60000;
     var today = new Date(date.getTime() + userTimezoneOffset);
 
