@@ -1,6 +1,13 @@
 <template>
   <!-- https://forum.vuejs.org/t/how-do-i-make-an-html-tag-inside-a-data-string-render-as-an-html-tag/13074 -->
   <div
+    v-if="screenShot"
+    class="h-100 w-100"
+    @click="click"
+    v-html="svgContentFormatted"
+  ></div>
+  <div
+    v-else
     class="h-100 w-100"
     @click="click"
     :style="`background-image: url(&quot;data:image/svg+xml,${svgContentFormatted}&quot;)`"
@@ -12,7 +19,15 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
 export default {
-  props: ["scale", "rotation", "colors", "name", "width", "height"],
+  props: [
+    "scale",
+    "rotation",
+    "colors",
+    "name",
+    "width",
+    "height",
+    "screenShot",
+  ],
   emits: ["click"],
   data() {
     return {
@@ -70,15 +85,18 @@ export default {
         })'`
       );
 
-      svgText = svgText.replace(
-        "<svg",
-        "<svg xmlns='http://www.w3.org/2000/svg'"
-      );
+      if (!this.screenShot) {
+        svgText = svgText.replace(
+          "<svg",
+          "<svg xmlns='http://www.w3.org/2000/svg'"
+        );
 
-      return svgText
-        .replace(/(\r\n|\n|\r)/gm, "")
-        .replaceAll("#", "%23")
-        .replaceAll('"', "'");
+        svgText = svgText
+          .replace(/(\r\n|\n|\r)/gm, "")
+          .replaceAll("#", "%23")
+          .replaceAll('"', "'");
+      }
+      return svgText;
     },
   },
   methods: {

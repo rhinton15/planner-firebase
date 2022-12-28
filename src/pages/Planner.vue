@@ -191,6 +191,7 @@
                   :width="sticker.properties.dim.w"
                   :height="sticker.properties.dim.h"
                   :rotation="sticker.properties.prot"
+                  :screenShot="screenShot"
                 ></svg-sticker>
 
                 <template #text>
