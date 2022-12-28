@@ -41,6 +41,14 @@
         />
         <label class="px-2">%</label>
       </sticker-property>
+      <sticker-property title="Rotate">
+        <input
+          type="number"
+          class="form-control form-control-small m-auto text-center"
+          :value="modelValue.prot || 0"
+          @input="numberInput($event, null, 'prot', 0, 0, -1000, 1000)"
+        />
+      </sticker-property>
     </sticker-property-group>
     <sticker-property-group title="Font" v-if="modelValue.font != null">
       <sticker-property title="Color">

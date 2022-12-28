@@ -1,6 +1,10 @@
 <template>
   <!-- https://forum.vuejs.org/t/how-do-i-make-an-html-tag-inside-a-data-string-render-as-an-html-tag/13074 -->
-  <div class="h-100 w-100" v-html="svgContentFormatted" @click="click"></div>
+  <div
+    class="h-100 w-100"
+    @click="click"
+    :style="`background-image: url(&quot;data:image/svg+xml,${svgContentFormatted}&quot;)`"
+  ></div>
 </template>
 
 <script>
@@ -8,7 +12,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 
 export default {
-  props: ["scale", "colors", "name", "width", "height"],
+  props: ["scale", "rotation", "colors", "name", "width", "height"],
   emits: ["click"],
   data() {
     return {
@@ -16,6 +20,8 @@ export default {
       //   https://stackoverflow.com/questions/3830244/how-to-get-the-current-date-or-and-time-in-seconds
       id: new Date().getTime(),
       svgContent: "",
+      svgText:
+        "<svg id='patternId' width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='a' patternUnits='userSpaceOnUse' width='40' height='40' patternTransform='scale(2) rotate(20)'><rect x='0' y='0' width='100%' height='100%' fill='hsla(0,0%,100%,1)'/><path d='M40 45a5 5 0 110-10 5 5 0 010 10zM0 45a5 5 0 110-10 5 5 0 010 10zM0 5A5 5 0 110-5 5 5 0 010 5zm40 0a5 5 0 110-10 5 5 0 010 10z'  stroke-width='1' stroke='hsla(258.5,59.4%,59.4%,1)' fill='none'/><path d='M20 25a5 5 0 110-10 5 5 0 010 10z'  stroke-width='1' stroke='hsla(339.6,82.2%,51.6%,1)' fill='none'/></pattern></defs><rect width='800%' height='800%' transform='translate(0,0)' fill='url(%23a)'/></svg>",
     };
   },
   async created() {
@@ -59,19 +65,20 @@ export default {
 
       svgText = svgText.replace(
         "<pattern",
-        `<pattern style='transform: scale(${2 ** (this.scale || 0)}, ${
-          2 ** (this.scale || 0)
+        `<pattern patternTransform='scale(${2 ** (this.scale || 0)}) rotate(${
+          this.rotation || 0
         })'`
       );
 
-      if (this.width) {
-        svgText = svgText.replace('width="100%"', `width="${this.width}px"`);
-      }
-      if (this.height) {
-        svgText = svgText.replace('height="100%"', `height="${this.height}px"`);
-      }
+      svgText = svgText.replace(
+        "<svg",
+        "<svg xmlns='http://www.w3.org/2000/svg'"
+      );
 
-      return svgText;
+      return svgText
+        .replace(/(\r\n|\n|\r)/gm, "")
+        .replaceAll("#", "%23")
+        .replaceAll('"', "'");
     },
   },
   methods: {

@@ -218,6 +218,7 @@ export default {
 
           // https://stackoverflow.com/questions/1979884/how-to-use-javascript-regex-over-multiple-lines
           let pattern = this.fileContent.match(/<g[\s\S]*?>([\s\S]*?)<\/g>/)[1];
+          let closeG = pattern.includes("<g") ? "</g>" : "";
 
           Object.keys(this.colors).forEach(
             (color) => (pattern = pattern.replaceAll(color, this.colors[color]))
@@ -234,6 +235,7 @@ export default {
     patternUnits="userSpaceOnUse"
   >
     ${pattern}
+    ${closeG}
   </pattern>
 
   <rect

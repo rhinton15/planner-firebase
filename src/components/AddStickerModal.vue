@@ -66,15 +66,16 @@
                     class="m-2"
                     v-for="pattern in patterns"
                     :key="pattern.id"
-                  >
-                    <svg-sticker
-                      :style="`
+                    :style="`
                           width: ${290 / (pattern.ratio || 5 / 3)}px !important;
                           height: 290px !important;
                         `"
+                  >
+                    <svg-sticker
                       :name="pattern.id"
                       :width="290 / (pattern.ratio || 5 / 3)"
                       :height="290"
+                      :rotation="0"
                       @click="
                         (colors) =>
                           addSticker(pattern.id, colors, {

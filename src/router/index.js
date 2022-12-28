@@ -28,12 +28,10 @@ const router = createRouter({
     {
       path: "/terms",
       component: () => import("../pages/TermsAndConditions.vue"),
-      meta: { requiresAuth: true },
     },
     {
       path: "/privacy",
       component: () => import("../pages/PrivacyPolicy.vue"),
-      meta: { requiresAuth: true },
     },
     {
       path: "/admin/managePatterns",

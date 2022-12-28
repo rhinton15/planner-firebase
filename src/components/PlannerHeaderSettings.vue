@@ -74,7 +74,7 @@
           <select
             class="form-select w-auto"
             :value="modelValue.d.fam || 'Amatic SC'"
-            @input="stringInput($event, 'm', 'fam', 'Amatic SC')"
+            @input="stringInput($event, 'd', 'fam', 'Amatic SC')"
           >
             <option v-for="font in fonts.sort()" :key="font" :value="font">
               {{ font }}
