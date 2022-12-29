@@ -250,8 +250,8 @@
                       sticker.properties.font.b ? 'fw-bold' : ''
                     }`"
                   >
-                    <!-- Some Text -->
-                    {{ sticker.properties.text }}
+                    Some Text
+                    <!-- {{ sticker.properties.text }} -->
                   </div>
 
                   <to-do-list
@@ -869,9 +869,7 @@ export default {
     async loadTemplate(template) {
       let existingStickers = this.stickers;
       await this.loadPlanner(template.uid, "templates", template.id);
-      // await this.loadPlanner(template.uid, "templates", "wEAvudDlh07MT577xImd");
-      // this.stickers = this.stickers.concat(existingStickers);
-      this.stickers = existingStickers.concat(this.stickers);
+      this.stickers = this.stickers.concat(existingStickers);
       await this.saveChanges(this.currentWeek);
       this.setShowingTemplate(null);
     },

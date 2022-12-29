@@ -30,8 +30,8 @@
           ><font-awesome-icon
             :icon="`fa-regular fa-circle${item.done ? '-check' : ''}`"
         /></span>
-        {{ item.text || "\xa0" }}
-        <!-- {{ screenShot ? "To Do" : item.text || "\xa0" }} -->
+        <!-- {{ item.text || "\xa0" }} -->
+        {{ screenShot ? "To Do" : item.text || "\xa0" }}
       </li>
     </ul>
     <textarea
@@ -55,8 +55,6 @@
       @input="auto_grow($event.target)"
       @keydown="getCursor"
       ref="listInput"
-      @focus="focus"
-      @blur="blur"
     ></textarea>
   </div>
 </template>
@@ -76,12 +74,6 @@ export default {
     },
   },
   methods: {
-    focus() {
-      console.log("focus");
-    },
-    blur() {
-      console.log("blur");
-    },
     click() {
       $(this.$refs.listInput).click();
       $(this.$refs.listInput).focus();
