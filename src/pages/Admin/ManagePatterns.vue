@@ -185,46 +185,87 @@ export default {
   },
   watch: {
     fileContent(newValue) {
-      const pattern = newValue.match(/<g[\s\S]*?>([\s\S]*?)<\/g>/)[1];
+      if (this.isMonster) {
+        const pattern = newValue.match(
+          /<pattern[\s\S]*?>([\s\S]*?)<\/pattern>/
+        )[1];
 
-      const regexpHex = /#[0-9A-Fa-f]{6}/g;
-      // https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates
-      const colors = [...pattern.matchAll(regexpHex)]
-        .flat()
-        .filter((value, index, self) => self.indexOf(value) === index);
+        const regexpHsla = /hsla\(.*?\)/g;
+        const colors = [...pattern.matchAll(regexpHsla)]
+          .flat()
+          .filter((value, index, self) => self.indexOf(value) === index);
 
-      this.colors = {};
-      colors.forEach((color) => (this.colors[color] = color));
+        this.colors = {};
+        colors.forEach((color) => (this.colors[color] = this.hslaToHex(color)));
+      } else {
+        const pattern = newValue.match(/<g[\s\S]*?>([\s\S]*?)<\/g>/)[1];
 
-      const width = this.fileContent.match(/width="(.*)mm"/)[1];
-      const height = this.fileContent.match(/height="(.*)mm"/)[1];
-      this.setDimensions({
-        width: Math.round(parseFloat(width)),
-        height: Math.round(parseFloat(height)),
-      });
+        const regexpHex = /#[0-9A-Fa-f]{6}/g;
+        // https://stackoverflow.com/questions/1960473/get-all-unique-values-in-a-javascript-array-remove-duplicates
+        const colors = [...pattern.matchAll(regexpHex)]
+          .flat()
+          .filter((value, index, self) => self.indexOf(value) === index);
+
+        this.colors = {};
+        colors.forEach((color) => (this.colors[color] = color));
+
+        const width = this.fileContent.match(/width="(.*)mm"/)[1];
+        const height = this.fileContent.match(/height="(.*)mm"/)[1];
+        this.setDimensions({
+          width: Math.round(parseFloat(width)),
+          height: Math.round(parseFloat(height)),
+        });
+      }
     },
   },
   computed: {
+    isMonster() {
+      return this.fileContent?.match("<pattern");
+    },
     processedFileContent() {
       if (this.selectedFile && this.fileContent) {
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Groups_and_Backreferences
-        const width = this.fileContent.match(/width="(.*)mm"/)[1];
-        const height = this.fileContent.match(/height="(.*)mm"/)[1];
-
-        if (this.isPattern) {
-          const patternName = this.selectedFile.name
-            .replace(".svg", "")
-            .replace(" ", "-");
-
-          // https://stackoverflow.com/questions/1979884/how-to-use-javascript-regex-over-multiple-lines
-          let pattern = this.fileContent.match(/<g[\s\S]*?>([\s\S]*?)<\/g>/)[1];
-          let closeG = pattern.includes("<g") ? "</g>" : "";
-
-          Object.keys(this.colors).forEach(
-            (color) => (pattern = pattern.replaceAll(color, this.colors[color]))
+        if (this.isMonster) {
+          let newSvg = this.fileContent;
+          newSvg = newSvg.replace("<svg id='patternId'", "<svg");
+          newSvg = newSvg.replace(" xmlns='http://www.w3.org/2000/svg'", "");
+          newSvg = newSvg.replaceAll("800%", "100%");
+          newSvg = newSvg.replace(
+            "<pattern id='a'",
+            `<pattern id='${this.fileName}'`
+          );
+          newSvg = newSvg.replace("url(%23a)", `url(#${this.fileName})`);
+          newSvg = newSvg.replace(
+            /patternTransform='scale\(.\) rotate\(.\)'/,
+            ""
           );
 
-          const newSvg = `
+          Object.keys(this.colors).forEach(
+            (color) => (newSvg = newSvg.replaceAll(color, this.colors[color]))
+          );
+
+          return newSvg;
+        } else {
+          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Groups_and_Backreferences
+          const width = this.fileContent.match(/width="(.*)mm"/)[1];
+          const height = this.fileContent.match(/height="(.*)mm"/)[1];
+
+          if (this.isPattern) {
+            const patternName = this.selectedFile.name
+              .replace(".svg", "")
+              .replace(" ", "-");
+
+            // https://stackoverflow.com/questions/1979884/how-to-use-javascript-regex-over-multiple-lines
+            let pattern = this.fileContent.match(
+              /<g[\s\S]*?>([\s\S]*?)<\/g>/
+            )[1];
+            let closeG = pattern.includes("<g") ? "</g>" : "";
+
+            Object.keys(this.colors).forEach(
+              (color) =>
+                (pattern = pattern.replaceAll(color, this.colors[color]))
+            );
+
+            const newSvg = `
 <svg width="100%" height="100%">
   <pattern
     id="pattern-${patternName}"
@@ -248,20 +289,22 @@ export default {
 </svg>
           `;
 
-          return newSvg;
-        } else {
-          let pattern = this.fileContent.match(
-            /<svg[\s\S]*?>([\s\S]*?)<\/svg>/
-          )[0];
+            return newSvg;
+          } else {
+            let pattern = this.fileContent.match(
+              /<svg[\s\S]*?>([\s\S]*?)<\/svg>/
+            )[0];
 
-          pattern = pattern.replace(`width="${width}mm"`, `width="100%"`);
-          pattern = pattern.replace(`height="${height}mm"`, `height="100%"`);
+            pattern = pattern.replace(`width="${width}mm"`, `width="100%"`);
+            pattern = pattern.replace(`height="${height}mm"`, `height="100%"`);
 
-          Object.keys(this.colors).forEach(
-            (color) => (pattern = pattern.replaceAll(color, this.colors[color]))
-          );
+            Object.keys(this.colors).forEach(
+              (color) =>
+                (pattern = pattern.replaceAll(color, this.colors[color]))
+            );
 
-          return pattern;
+            return pattern;
+          }
         }
       }
 
@@ -345,6 +388,60 @@ export default {
       let newValue = {};
       newValue[this.fileName] = stickerProps;
       await updateDoc(doc(db, "stickers", "svg"), newValue);
+    },
+    hslaToHex(strValue) {
+      const h = parseInt(strValue.replace(/hsla\((.*),.*,.*,.*\)/, "$1"));
+      const s = parseInt(strValue.replace(/hsla\(.*,(.*),.*,.*\)/, "$1"));
+      const l = parseInt(strValue.replace(/hsla\(.*,.*,(.*),.*\)/, "$1"));
+      return this.HSLToHex(h, s, l);
+    },
+    HSLToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+
+      let c = (1 - Math.abs(2 * l - 1)) * s,
+        x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
+        m = l - c / 2,
+        r = 0,
+        g = 0,
+        b = 0;
+
+      if (0 <= h && h < 60) {
+        r = c;
+        g = x;
+        b = 0;
+      } else if (60 <= h && h < 120) {
+        r = x;
+        g = c;
+        b = 0;
+      } else if (120 <= h && h < 180) {
+        r = 0;
+        g = c;
+        b = x;
+      } else if (180 <= h && h < 240) {
+        r = 0;
+        g = x;
+        b = c;
+      } else if (240 <= h && h < 300) {
+        r = x;
+        g = 0;
+        b = c;
+      } else if (300 <= h && h < 360) {
+        r = c;
+        g = 0;
+        b = x;
+      }
+      // Having obtained RGB, convert channels to hex
+      r = Math.round((r + m) * 255).toString(16);
+      g = Math.round((g + m) * 255).toString(16);
+      b = Math.round((b + m) * 255).toString(16);
+
+      // Prepend 0s, if necessary
+      if (r.length == 1) r = "0" + r;
+      if (g.length == 1) g = "0" + g;
+      if (b.length == 1) b = "0" + b;
+
+      return "#" + r + g + b;
     },
   },
 };
