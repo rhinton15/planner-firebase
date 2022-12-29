@@ -167,7 +167,7 @@
         <iframe
           id="demo"
           class="w-100"
-          src="https://www.youtube.com/embed/7xduzR_lN-8?autoplay=1&playlist=7xduzR_lN-8&loop=1&controls=0&modestbranding=1&mute=1"
+          src="https://www.youtube.com/embed/PvK19lByyRc?autoplay=1&playlist=PvK19lByyRc&loop=1&controls=0&modestbranding=1&mute=1"
           title="YouTube video player"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -235,7 +235,7 @@ export default {
 .grid {
   display: grid;
   /* grid-template-columns: 20px 1fr 65% 20px; */
-  grid-template-columns: 1fr 250px minmax(0, 20px) min-content 1fr;
+  grid-template-columns: 1fr 260px minmax(0, 20px) min-content 1fr;
   grid-template-rows: 40px 1fr 40px;
   column-gap: 6px;
 }
@@ -253,7 +253,7 @@ export default {
 }
 
 #demo {
-  aspect-ratio: 99/63;
+  aspect-ratio: 3/2;
   min-width: 550px;
 }
 
