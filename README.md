@@ -1,4 +1,5 @@
 # planner
+This digital decorative planner website is written using Vue.js and Firebase.  This site is hosted at [https://fundayplanners.com/].
 
 ## Project setup
 ```
